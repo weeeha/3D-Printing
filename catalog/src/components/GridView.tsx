@@ -7,7 +7,7 @@ import { SpoolSvg } from "./Spool";
 
 const STATUS_STYLE: Record<Status, string> = {
   have: "border-[var(--rule)] text-[var(--muted)]",
-  low: "border-amber-500/60 text-amber-600 dark:text-amber-400",
+  low: "border-[var(--warn)] text-[var(--warn)]",
   gone: "border-[var(--muted)] text-[var(--muted)] line-through",
 };
 

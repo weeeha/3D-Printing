@@ -11,6 +11,7 @@ import { Filters, EMPTY_FILTERS, type FilterState } from "@/components/Filters";
 import { RackView, type Section } from "@/components/RackView";
 import { GridView } from "@/components/GridView";
 import { sortSpools, groupByColour, type SortKey } from "@/lib/colour-sort";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const SPOOLS = rawSpools as Spool[];
 const IDS = SPOOLS.map((s) => s.id);
@@ -92,9 +93,12 @@ export default function Home() {
   return (
     <main className="mx-auto max-w-[1100px] px-4 py-8 sm:px-8 sm:py-12 flex flex-col gap-8">
       <header className="flex flex-col gap-4">
-        <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--muted)]">
-          Bambu Lab and Amazon · Dec 2022 to Dec 2025
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--muted)]">
+            Bambu Lab and Amazon · Dec 2022 to Dec 2025
+          </p>
+          <ThemeToggle />
+        </div>
         <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">
           Filament Shelf
         </h1>
