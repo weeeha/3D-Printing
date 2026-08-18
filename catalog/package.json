@@ -6,9 +6,10 @@
   "scripts": {
     "build:data": "node scripts/build-spools.mjs",
     "dev": "npm run build:data && next dev",
-    "build": "npm run build:data && next build",
+    "build": "next build",
     "start": "next start",
-    "test": "vitest run"
+    "test": "vitest run",
+    "data": "node scripts/build-spools.mjs"
   },
   "dependencies": {
     "next": "^15.1.0",
