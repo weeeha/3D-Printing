@@ -1,0 +1,6 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+src/data/spools.json
+.vercel
