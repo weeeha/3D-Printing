@@ -9,9 +9,11 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "data": "node scripts/build-spools.mjs"
+    "data": "node scripts/build-spools.mjs",
+    "printer": "node scripts/read-printer.mjs"
   },
   "dependencies": {
+    "mqtt": "^5.15.2",
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

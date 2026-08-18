@@ -1,0 +1,91 @@
+{
+  "readAt": "2026-08-18T03:30:40.869Z",
+  "printing": "lithophane-3_photo frame",
+  "percent": 33,
+  "ams": [
+    {
+      "unit": 0,
+      "humidityRh": 20,
+      "tempC": 30.4
+    },
+    {
+      "unit": 1,
+      "humidityRh": 23,
+      "tempC": 30.2
+    }
+  ],
+  "slots": [
+    {
+      "slot": "A1",
+      "uuid": "788AFE93C5124FBE85E266FF43B37AC4",
+      "sku": "A01-K1",
+      "productLine": "PLA Matte",
+      "material": "PLA",
+      "hex": "#000000",
+      "remain": 75
+    },
+    {
+      "slot": "A2",
+      "uuid": "0E5B133219B8424E85F85D3E6EFA170C",
+      "sku": "A01-W2",
+      "productLine": "PLA Matte",
+      "material": "PLA",
+      "hex": "#FFFFFF",
+      "remain": 29
+    },
+    {
+      "slot": "A3",
+      "uuid": "A4ACE98CDA1E4F389B6316549BE7AA85",
+      "sku": "A01-R1",
+      "productLine": "PLA Matte",
+      "material": "PLA",
+      "hex": "#DE4343",
+      "remain": 26
+    },
+    {
+      "slot": "A4",
+      "uuid": "A017027A954A42E19361988E7E60377E",
+      "sku": "A00-R0",
+      "productLine": "PLA Basic",
+      "material": "PLA",
+      "hex": "#C00D1E",
+      "remain": 34
+    },
+    {
+      "slot": "B1",
+      "uuid": "0D023233A15747FCACAC9C6BD98ED7AF",
+      "sku": "A00-B8",
+      "productLine": "PLA Basic",
+      "material": "PLA",
+      "hex": "#0086D6",
+      "remain": 100
+    },
+    {
+      "slot": "B2",
+      "uuid": "5D6F4479F4C64B6BAA8F25EF69D8B954",
+      "sku": "A00-Y0",
+      "productLine": "PLA Basic",
+      "material": "PLA",
+      "hex": "#F4EE2A",
+      "remain": 100
+    },
+    {
+      "slot": "B3",
+      "uuid": "ECF01A3373E94B5689D3C471E468DF02",
+      "sku": "A00-P6",
+      "productLine": "PLA Basic",
+      "material": "PLA",
+      "hex": "#EC008C",
+      "remain": 92
+    },
+    {
+      "slot": "B4",
+      "uuid": "F860693EA3C34A20B4C69FEC0639C9A4",
+      "sku": "A01-W2",
+      "productLine": "PLA Matte",
+      "material": "PLA",
+      "hex": "#FFFFFF",
+      "remain": 100
+    }
+  ]
+}

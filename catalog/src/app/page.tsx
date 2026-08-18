@@ -12,8 +12,12 @@ import { RackView, type Section } from "@/components/RackView";
 import { GridView } from "@/components/GridView";
 import { sortSpools, groupByColour, type SortKey } from "@/lib/colour-sort";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AmsStrip } from "@/components/AmsStrip";
+import rawPrinter from "@/data/printer-state.json";
+import { derivedStatuses, type PrinterState } from "@/lib/printer";
 
 const SPOOLS = rawSpools as Spool[];
+const PRINTER = rawPrinter as PrinterState;
 const IDS = SPOOLS.map((s) => s.id);
 
 const TOTAL_KG = SPOOLS.reduce((t, s) => t + s.weightKg, 0);
@@ -30,6 +34,7 @@ export default function Home() {
     grid: "date",
   });
   const [grouped, setGrouped] = useState(false);
+  const [applied, setApplied] = useState(false);
   const sort = sortByView[view];
   const [status, setStatus] = useState<Record<string, Status>>(() =>
     loadStatus(null, IDS),
@@ -39,6 +44,16 @@ export default function Home() {
   useEffect(() => {
     setStatus(loadStatus(window.localStorage.getItem(STORAGE_KEY), IDS));
   }, []);
+
+  // Explicit, never automatic: the printer proposes, you decide.
+  const applyPrinterReading = () => {
+    setStatus((prev) => {
+      const next = { ...prev, ...derivedStatuses(PRINTER, SPOOLS) };
+      window.localStorage.setItem(STORAGE_KEY, serialiseStatus(next));
+      return next;
+    });
+    setApplied(true);
+  };
 
   const toggle = (id: string) => {
     setStatus((prev) => {
@@ -126,6 +141,8 @@ export default function Home() {
           ))}
         </div>
       </header>
+
+      <AmsStrip state={PRINTER} onApply={applyPrinterReading} applied={applied} />
 
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex border border-[var(--rule)]">

@@ -3,3 +3,6 @@ node_modules/
 out/
 next-env.d.ts
 .vercel
+
+# Printer credentials, never committed
+.env.local
