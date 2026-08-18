@@ -1,0 +1,34 @@
+# --- Generated meshes (regenerate from parametric sources) ---
+*.stl
+*.step
+*.STEP
+*.obj
+!**/print/**/*.stl
+
+# --- CAD scratch / backups ---
+*.FCBak
+*.blend1
+*.blend2
+*.autosave
+
+# --- Slicer output that isn't a kept deliverable ---
+*.gcode
+*.gcode.3mf
+
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+
+# --- Node / Next.js (catalog) ---
+node_modules/
+.next/
+out/
+.vercel/
+
+# --- Third-party downloaded models (licensing: do not redistribute) ---
+**/3d Models - Downloaded/
+third-party/
+
+# --- OS ---
+.DS_Store

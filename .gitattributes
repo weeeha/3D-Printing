@@ -1,0 +1,8 @@
+# Print-ready deliverables and heavy binaries go through Git LFS.
+*.3mf   filter=lfs diff=lfs merge=lfs -text
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.png   filter=lfs diff=lfs merge=lfs -text
+*.jpg   filter=lfs diff=lfs merge=lfs -text
+
+# CAD binary formats: mark binary so git never tries to merge them.
+*.FCStd binary
