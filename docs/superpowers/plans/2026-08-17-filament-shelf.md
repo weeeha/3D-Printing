@@ -1,0 +1,959 @@
+# Virtual Filament Shelf Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** A Vercel-deployed page showing all 78 purchased filament spools as a realistic wall rack or a dense grid, where clicking a spool records whether it is still on the shelf.
+
+**Architecture:** A build script reads the two CSV ledgers in `printer/` and explodes filament line items into one JSON record per physical spool. The Next.js app imports that JSON statically and never reads CSV at runtime. Purchase data is immutable; per-spool status lives separately in localStorage and exports to CSV.
+
+**Tech Stack:** Next.js 15 App Router with static export, TypeScript, Tailwind CSS v4, Vitest. No component library. Spools are hand-drawn SVG.
+
+**Spec:** `docs/superpowers/specs/2026-08-17-filament-shelf-design.md`
+
+## Global Constraints
+
+- Working directory for all app code is `catalog/`. Repo root is the "3D Printing" repo, current branch `filament-shelf`.
+- Node 20+. Package manager: npm.
+- Total spool count is exactly **78**: 59 Bambu, 19 Amazon. Bambu weight 57 kg, Amazon 19 kg.
+- Only `filament` and `support` rows from `orders.csv` become spools. Skip `printer`, `hardware`, `ams`, `hotend`, `accessory`, `spare`. From `orders-amazon.csv` every row becomes a spool except the Bed Weld adhesive glue row.
+- `pricePaidCad` is `number | null`. Every Amazon spool is `null`. Never render null as `$0`; render "not captured".
+- Status values are exactly `"have" | "low" | "gone"`. Cycle order: `have → low → gone → have`.
+- Finish values are exactly: `"basic" | "matte" | "silk" | "sparkle" | "translucent" | "dual" | "rainbow" | "glow" | "marble"`.
+- Never push to `main`. Work stays on `filament-shelf`. Vercel deploys are preview only, never `--prod`, without explicit approval.
+- Colour hexes are indicative, not sampled from physical spools. The page must say so.
+- No em-dashes in any user-facing copy.
+
+---
+
+### Task 1: Scaffold the Next.js app in catalog/
+
+**Files:**
+- Create: `catalog/package.json`
+- Create: `catalog/tsconfig.json`
+- Create: `catalog/next.config.ts`
+- Create: `catalog/postcss.config.mjs`
+- Create: `catalog/vitest.config.ts`
+- Create: `catalog/src/app/layout.tsx`
+- Create: `catalog/src/app/globals.css`
+- Create: `catalog/src/app/page.tsx`
+- Create: `catalog/.gitignore`
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces: a running dev server and a passing `npm test` command that later tasks extend.
+
+- [ ] **Step 1: Create the app directory and package.json**
+
+```bash
+mkdir -p "catalog/src/app" "catalog/src/lib" "catalog/src/components" "catalog/src/data" "catalog/scripts" "catalog/tests"
+```
+
+`catalog/package.json`:
+
+```json
+{
+  "name": "filament-shelf",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:data": "node scripts/build-spools.mjs",
+    "dev": "npm run build:data && next dev",
+    "build": "npm run build:data && next build",
+    "start": "next start",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
+```
+
+- [ ] **Step 2: Add config files**
+
+`catalog/tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "ES2022"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}
+```
+
+`catalog/next.config.ts`:
+
+```ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  output: "export",
+  images: { unoptimized: true },
+};
+
+export default nextConfig;
+```
+
+`catalog/postcss.config.mjs`:
+
+```js
+export default { plugins: { "@tailwindcss/postcss": {} } };
+```
+
+`catalog/vitest.config.ts`:
+
+```ts
+import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
+
+export default defineConfig({
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+  },
+  test: { environment: "node", include: ["tests/**/*.test.ts"] },
+});
+```
+
+`catalog/.gitignore`:
+
+```
+node_modules/
+.next/
+out/
+next-env.d.ts
+src/data/spools.json
+```
+
+Note: `spools.json` is generated by `build:data` and is deliberately not committed.
+
+- [ ] **Step 3: Add minimal app shell**
+
+`catalog/src/app/globals.css`:
+
+```css
+@import "tailwindcss";
+
+:root { --ground: #f4f5f2; --ink: #191c1a; }
+@media (prefers-color-scheme: dark) {
+  :root { --ground: #121513; --ink: #e8eae6; }
+}
+body { background: var(--ground); color: var(--ink); }
+```
+
+`catalog/src/app/layout.tsx`:
+
+```tsx
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "Filament Shelf",
+  description: "Every spool bought, and what is still on the shelf.",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className="antialiased">{children}</body>
+    </html>
+  );
+}
+```
+
+`catalog/src/app/page.tsx`:
+
+```tsx
+export default function Home() {
+  return <main className="p-8"><h1>Filament Shelf</h1></main>;
+}
+```
+
+- [ ] **Step 4: Install and verify the app boots**
+
+```bash
+cd catalog && npm install && npx next build
+```
+
+Expected: build succeeds and writes `out/`. It is fine that `build:data` does not exist yet; run `npx next build` directly, not `npm run build`.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add catalog/
+git commit -m "feat: scaffold filament shelf Next.js app in catalog/"
+```
+
+---
+
+### Task 2: Colour and finish mapping
+
+**Files:**
+- Create: `catalog/src/lib/colours.ts`
+- Test: `catalog/tests/colours.test.ts`
+
+**Interfaces:**
+- Consumes: nothing.
+- Produces:
+  - `type Finish = "basic" | "matte" | "silk" | "sparkle" | "translucent" | "dual" | "rainbow" | "glow" | "marble"`
+  - `type Swatch = { hex: string; finish: Finish; hex2?: string }`
+  - `function lookupColour(key: string): Swatch | undefined`
+  - `const COLOURS: Record<string, Swatch>`
+
+`hex2` is the second stop for `dual` finishes. `rainbow` and `glow` finishes are rendered as multi-stop by the component and only need `hex` as their base.
+
+- [ ] **Step 1: Write the failing test**
+
+`catalog/tests/colours.test.ts`:
+
+```ts
+import { describe, it, expect } from "vitest";
+import { COLOURS, lookupColour } from "@/lib/colours";
+
+describe("colours", () => {
+  it("resolves a Bambu colour code to a hex and finish", () => {
+    expect(lookupColour("11101")).toEqual({ hex: "#1A1A1A", finish: "matte" });
+  });
+
+  it("resolves a third-party key by brand and colour name", () => {
+    expect(lookupColour("creality:hyper pla:grey")).toEqual({
+      hex: "#8A8F92",
+      finish: "basic",
+    });
+  });
+
+  it("gives dual-colour swatches a second stop", () => {
+    const s = lookupColour("gilded rose");
+    expect(s?.finish).toBe("dual");
+    expect(s?.hex2).toBeTruthy();
+  });
+
+  it("returns undefined for an unknown key", () => {
+    expect(lookupColour("nope")).toBeUndefined();
+  });
+
+  it("gives every entry a valid hex and finish", () => {
+    const finishes = new Set([
+      "basic", "matte", "silk", "sparkle", "translucent",
+      "dual", "rainbow", "glow", "marble",
+    ]);
+    for (const [key, s] of Object.entries(COLOURS)) {
+      expect(s.hex, key).toMatch(/^#[0-9A-Fa-f]{6}$/);
+      expect(finishes.has(s.finish), `${key} finish ${s.finish}`).toBe(true);
+      if (s.finish === "dual") expect(s.hex2, key).toMatch(/^#[0-9A-Fa-f]{6}$/);
+    }
+  });
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `cd catalog && npx vitest run tests/colours.test.ts`
+Expected: FAIL, cannot resolve `@/lib/colours`.
+
+- [ ] **Step 3: Write the implementation**
+
+`catalog/src/lib/colours.ts`. Keys are lowercased. Bambu entries key on the numeric code; entries without a code key on the lowercased colour name; third-party entries key on `brand:productLine:colourName`, all lowercased.
+
+```ts
+export type Finish =
+  | "basic" | "matte" | "silk" | "sparkle" | "translucent"
+  | "dual" | "rainbow" | "glow" | "marble";
+
+export type Swatch = { hex: string; finish: Finish; hex2?: string };
+
+export const COLOURS: Record<string, Swatch> = {
+  // --- Bambu PLA Basic ---
+  "10201": { hex: "#F7E6DE", finish: "basic" },
+  "10202": { hex: "#EC008C", finish: "basic" },
+  "10300": { hex: "#FF6A13", finish: "basic" },
+  "10400": { hex: "#F4EE2A", finish: "basic" },
+  "10502": { hex: "#3F8E43", finish: "basic" },
+  "10602": { hex: "#5B6579", finish: "basic" },
+  "10700": { hex: "#5E43B7", finish: "basic" },
+  "red": { hex: "#C00D1E", finish: "basic" },
+  // --- Bambu PLA Matte ---
+  "11100": { hex: "#FFFFFF", finish: "matte" },
+  "11101": { hex: "#1A1A1A", finish: "matte" },
+  "11200": { hex: "#DE4343", finish: "matte" },
+  "11201": { hex: "#E8AFCF", finish: "matte" },
+  "11400": { hex: "#F7D959", finish: "matte" },
+  "11600": { hex: "#0078BF", finish: "matte" },
+  "11601": { hex: "#A3D8E1", finish: "matte" },
+  "matte charcoal": { hex: "#1A1A1A", finish: "matte" },
+  // --- Bambu PLA Silk ---
+  "13104": { hex: "#A6A9AA", finish: "silk" },
+  "13401": { hex: "#F4A925", finish: "silk" },
+  "13701": { hex: "#8E4EC6", finish: "silk" },
+  "gold": { hex: "#FFC600", finish: "silk" },
+  // --- Bambu PLA Silk Dual ---
+  "gilded rose": { hex: "#E39BB4", hex2: "#D4A017", finish: "dual" },
+  "neon city": { hex: "#2E7BD6", hex2: "#D42E9E", finish: "dual" },
+  // --- Bambu PLA Sparkle and Galaxy ---
+  "13101": { hex: "#101010", finish: "sparkle" },
+  "13602": { hex: "#7B4E9E", finish: "sparkle" },
+  "crimson red sparkle": { hex: "#792B36", finish: "sparkle" },
+  "royal purple sparkle": { hex: "#483D8B", finish: "sparkle" },
+  // --- Bambu PLA Tough ---
+  "tough black": { hex: "#25282A", finish: "basic" },
+  "pine green": { hex: "#00482B", finish: "basic" },
+  // --- Bambu CMYK lithophane bundle ---
+  "litho cyan": { hex: "#00A5DF", finish: "basic" },
+  "litho magenta": { hex: "#EC008C", finish: "basic" },
+  "litho yellow": { hex: "#F4EE2A", finish: "basic" },
+  "litho black": { hex: "#0D0D0D", finish: "basic" },
+  // --- Bambu PETG ---
+  "30100": { hex: "#FFFFFF", finish: "basic" },
+  "30101": { hex: "#0D0D0D", finish: "basic" },
+  "30104": { hex: "#E8E3D9", finish: "basic" },
+  "30401": { hex: "#D4A017", finish: "basic" },
+  "30602": { hex: "#0086D6", finish: "basic" },
+  "30700": { hex: "#6B3FA0", finish: "basic" },
+  "32101": { hex: "#EBF0EE", finish: "translucent" },
+  "32500": { hex: "#7A8B3F", finish: "translucent" },
+  "petg white": { hex: "#FFFFFF", finish: "basic" },
+  "petg black": { hex: "#0D0D0D", finish: "basic" },
+  // --- Bambu support and soluble ---
+  "65102": { hex: "#EDE7DC", finish: "basic" },
+  "66400": { hex: "#F0F4F2", finish: "translucent" },
+  "support black": { hex: "#1A1A1A", finish: "basic" },
+  "support natural": { hex: "#EDE7DC", finish: "basic" },
+  // --- Amazon third party ---
+  "overture:pla plus (pla+):digital blue": { hex: "#0A84D6", finish: "basic" },
+  "duramic 3d:petg:purple": { hex: "#7A3FB5", finish: "basic" },
+  "duramic 3d:petg:yellow": { hex: "#F2C60E", finish: "basic" },
+  "duramic 3d:petg:pink": { hex: "#F06FA8", finish: "basic" },
+  "duramic 3d:petg:translucent green": { hex: "#2E965A", finish: "translucent" },
+  "duramic 3d:pla plus (pla+):purple": { hex: "#6B3FA0", finish: "basic" },
+  "duramic 3d:pla plus (pla+):white": { hex: "#FFFFFF", finish: "basic" },
+  "creality:hyper pla:black": { hex: "#111111", finish: "basic" },
+  "creality:hyper pla:grey": { hex: "#8A8F92", finish: "basic" },
+  "giantarm:pla glow in the dark:rainbow": { hex: "#8FD0F0", finish: "glow" },
+  "tronxy:pla glow in the dark bundle:green / purple / orange-red": {
+    hex: "#5FBF7A", finish: "glow",
+  },
+  "anycubic:silk pla:silk light gold": { hex: "#E8C87A", finish: "silk" },
+  "giantarm:petg:clear / transparent": { hex: "#EBF0EE", finish: "translucent" },
+  "cc3d:temp colour change pla:green to yellow": {
+    hex: "#3F9E5B", hex2: "#EDE04A", finish: "dual",
+  },
+  "unbranded:pla+ colour change:rainbow": { hex: "#E24B4B", finish: "rainbow" },
+  "cc3d:silk pla:purple": { hex: "#7C3FBF", finish: "silk" },
+  "giantarm:petg:metal green": { hex: "#1E7A4A", finish: "silk" },
+  "cc3d:marble petg:stone rock": { hex: "#D8D5CE", finish: "marble" },
+};
+
+export function lookupColour(key: string): Swatch | undefined {
+  return COLOURS[key.trim().toLowerCase()];
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `cd catalog && npx vitest run tests/colours.test.ts`
+Expected: PASS, 5 tests.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add catalog/src/lib/colours.ts catalog/tests/colours.test.ts
+git commit -m "feat: add filament colour and finish mapping"
+```
+
+---
+
+### Task 3: Build script, CSV to spools.json
+
+**Files:**
+- Create: `catalog/scripts/build-spools.mjs`
+- Create: `catalog/src/lib/spools.ts`
+- Test: `catalog/tests/build-spools.test.ts`
+
+**Interfaces:**
+- Consumes: `lookupColour`, `Finish` from Task 2.
+- Produces:
+  - `type Spool` exported from `@/lib/spools` with fields: `id, source, brand, material, productLine, colourName, colourCode, hex, hex2?, finish, weightKg, isRefill, orderId, orderDate, pricePaidCad`.
+  - `function buildSpools(bambuCsv: string, amazonCsv: string): Spool[]` exported from `catalog/scripts/build-spools.mjs` for testability, plus a CLI entry that writes `src/data/spools.json`.
+
+- [ ] **Step 1: Write the failing test**
+
+`catalog/tests/build-spools.test.ts`:
+
+```ts
+import { describe, it, expect, beforeAll } from "vitest";
+import { readFileSync } from "node:fs";
+import { buildSpools } from "../scripts/build-spools.mjs";
+
+let spools: any[];
+
+beforeAll(() => {
+  spools = buildSpools(
+    readFileSync("../printer/orders.csv", "utf8"),
+    readFileSync("../printer/orders-amazon.csv", "utf8"),
+  );
+});
+
+describe("buildSpools", () => {
+  it("yields exactly 78 spools", () => {
+    expect(spools).toHaveLength(78);
+  });
+
+  it("splits 59 Bambu and 19 Amazon", () => {
+    expect(spools.filter((s) => s.source === "bambu")).toHaveLength(59);
+    expect(spools.filter((s) => s.source === "amazon")).toHaveLength(19);
+  });
+
+  it("totals 57 kg Bambu and 19 kg Amazon", () => {
+    const kg = (src: string) =>
+      spools.filter((s) => s.source === src)
+            .reduce((t, s) => t + s.weightKg, 0);
+    expect(kg("bambu")).toBeCloseTo(57, 5);
+    expect(kg("amazon")).toBeCloseTo(19, 5);
+  });
+
+  it("expands the 10-roll matte pack into 10 spools, 5 and 5", () => {
+    const pack = spools.filter((s) => s.orderId === "ca644191913257447425"
+                                   && s.productLine === "PLA Matte");
+    expect(pack).toHaveLength(10);
+    expect(pack.filter((s) => s.colourCode === "11100")).toHaveLength(5);
+    expect(pack.filter((s) => s.colourCode === "11101")).toHaveLength(5);
+  });
+
+  it("expands the CMYK bundle into 4 spools", () => {
+    expect(spools.filter((s) => s.productLine === "PLA CMYK Lithophane Bundle"))
+      .toHaveLength(4);
+  });
+
+  it("keeps the TRONXY glow bundle as one 1 kg spool", () => {
+    const t = spools.filter((s) => s.brand === "TRONXY");
+    expect(t).toHaveLength(1);
+    expect(t[0].weightKg).toBe(1);
+  });
+
+  it("excludes hardware, hotends, accessories and the glue", () => {
+    const names = spools.map((s) => s.productLine.toLowerCase()).join("|");
+    expect(names).not.toContain("hotend");
+    expect(names).not.toContain("scraper");
+    expect(names).not.toContain("adhesive");
+    expect(names).not.toContain("enclosure");
+  });
+
+  it("gives every spool a unique id, a hex and a valid finish", () => {
+    const finishes = new Set([
+      "basic", "matte", "silk", "sparkle", "translucent",
+      "dual", "rainbow", "glow", "marble",
+    ]);
+    const ids = new Set(spools.map((s) => s.id));
+    expect(ids.size).toBe(78);
+    for (const s of spools) {
+      expect(s.hex, s.id).toMatch(/^#[0-9A-Fa-f]{6}$/);
+      expect(finishes.has(s.finish), `${s.id} ${s.finish}`).toBe(true);
+    }
+  });
+
+  it("leaves every Amazon price null and every Bambu price a number", () => {
+    for (const s of spools) {
+      if (s.source === "amazon") expect(s.pricePaidCad).toBeNull();
+      else expect(typeof s.pricePaidCad).toBe("number");
+    }
+  });
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `cd catalog && npx vitest run tests/build-spools.test.ts`
+Expected: FAIL, cannot find `../scripts/build-spools.mjs`.
+
+- [ ] **Step 3: Write the implementation**
+
+`catalog/scripts/build-spools.mjs`. Key decisions the implementer must honour:
+
+- Parse CSV with a small splitter; these files have no quoted commas, so `line.split(",")` is sufficient. Skip blank lines and the header.
+- Bambu rows: keep only `category` of `filament` or `support`.
+- Amazon rows: skip the row whose `item` contains `not filament`.
+- Per-unit price is `line_paid_cad / qty`, rounded to 2 decimals. Amazon price is always `null`.
+- `weightKg` comes from the size text: `0.5kg`/`0.5 kg` gives 0.5, the 10-pack gives 1 per expanded roll, the CMYK bundle gives 1 per expanded roll, the TRONXY `250g x4` bundle gives 1 for its single record, everything else gives 1.
+- `id` is `${source}-${slug(productLine)}-${colourCode || slug(colourName)}-${n}` where `n` is a 1-based counter across records sharing that prefix.
+- Colour lookup order for Bambu: numeric code from the variant text, then lowercased colour name. For Amazon: `brand:item:colour` lowercased. If lookup fails, throw with the failing key. Never silently default a colour, because a silent grey spool is a data bug that the page would hide.
+
+```js
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { lookupColour } from "../src/lib/colours.ts";
+
+const slug = (s) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+function parseCsv(text) {
+  const [header, ...rows] = text.trim().split("\n");
+  const cols = header.split(",");
+  return rows.filter(Boolean).map((line) => {
+    const cells = line.split(",");
+    return Object.fromEntries(cols.map((c, i) => [c, (cells[i] ?? "").trim()]));
+  });
+}
+
+function materialOf(productLine) {
+  const p = productLine.toLowerCase();
+  if (p.includes("petg")) return "PETG";
+  if (p.startsWith("pva")) return "PVA";
+  if (p.startsWith("support")) return "Support";
+  return "PLA";
+}
+
+export function buildSpools(bambuCsv, amazonCsv) {
+  const out = [];
+  const counters = new Map();
+  const push = (rec) => {
+    const prefix = `${rec.source}-${slug(rec.productLine)}-${rec.colourCode || slug(rec.colourName)}`;
+    const n = (counters.get(prefix) ?? 0) + 1;
+    counters.set(prefix, n);
+    out.push({ ...rec, id: `${prefix}-${n}` });
+  };
+
+  const colour = (key, label) => {
+    const s = lookupColour(key);
+    if (!s) throw new Error(`No colour mapping for "${key}" (${label})`);
+    return s;
+  };
+
+  // ---- Bambu ----
+  for (const r of parseCsv(bambuCsv)) {
+    if (r.category !== "filament" && r.category !== "support") continue;
+    const qty = Number(r.qty);
+    const paid = Number(r.line_paid_cad);
+    const variant = r.variant ?? "";
+    const codeMatch = variant.match(/\((\d{5})\)/);
+    const colourCode = codeMatch ? codeMatch[1] : "";
+
+    // Expansion cases, then the default.
+    if (r.item === "PLA Matte Refill Pack 10 Rolls") {
+      for (const [code, name] of [["11100", "Matte Ivory White"], ["11101", "Matte Charcoal"]]) {
+        for (let i = 0; i < 5; i++) {
+          const s = colour(code, r.item);
+          push({ source: "bambu", brand: "Bambu Lab", material: "PLA",
+            productLine: "PLA Matte", colourName: name, colourCode: code,
+            hex: s.hex, hex2: s.hex2, finish: s.finish, weightKg: 1,
+            isRefill: true, orderId: r.order_id, orderDate: r.order_date,
+            pricePaidCad: Number((paid / 10).toFixed(2)) });
+        }
+      }
+      continue;
+    }
+
+    if (r.item === "PLA CMYK Lithophane Bundle") {
+      for (const [key, name] of [["litho cyan", "Cyan"], ["litho magenta", "Magenta"],
+                                 ["litho yellow", "Yellow"], ["litho black", "Black"]]) {
+        const s = colour(key, r.item);
+        push({ source: "bambu", brand: "Bambu Lab", material: "PLA",
+          productLine: "PLA CMYK Lithophane Bundle", colourName: name, colourCode: "",
+          hex: s.hex, hex2: s.hex2, finish: s.finish, weightKg: 1, isRefill: false,
+          orderId: r.order_id, orderDate: r.order_date,
+          pricePaidCad: Number((paid / 4).toFixed(2)) });
+      }
+      continue;
+    }
+
+    // Default: one record per unit of qty.
+    const nameFromVariant = variant.split("/")[0].replace(/\(\d{5}\)/, "").trim();
+    const colourName = nameFromVariant || r.item;
+    const key = colourCode || colourName;
+    const s = colour(key, `${r.item} / ${variant}`);
+    const weightKg = /0\.5\s?kg/i.test(variant) ? 0.5 : 1;
+    for (let i = 0; i < qty; i++) {
+      push({ source: "bambu", brand: "Bambu Lab", material: materialOf(r.item),
+        productLine: r.item, colourName, colourCode,
+        hex: s.hex, hex2: s.hex2, finish: s.finish, weightKg,
+        isRefill: /refill/i.test(variant), orderId: r.order_id,
+        orderDate: r.order_date, pricePaidCad: Number((paid / qty).toFixed(2)) });
+    }
+  }
+
+  // ---- Amazon ----
+  for (const r of parseCsv(amazonCsv)) {
+    if (r.item.toLowerCase().includes("not filament")) continue;
+    const key = `${r.brand}:${r.item}:${r.colour}`;
+    const s = colour(key, key);
+    push({ source: "amazon", brand: r.brand, material: materialOf(r.item),
+      productLine: r.item, colourName: r.colour, colourCode: "",
+      hex: s.hex, hex2: s.hex2, finish: s.finish, weightKg: 1,
+      isRefill: false, orderId: r.order_id || "", orderDate: r.order_date,
+      pricePaidCad: null });
+  }
+
+  return out;
+}
+
+// CLI entry
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const here = dirname(fileURLToPath(import.meta.url));
+  const spools = buildSpools(
+    readFileSync(resolve(here, "../../printer/orders.csv"), "utf8"),
+    readFileSync(resolve(here, "../../printer/orders-amazon.csv"), "utf8"),
+  );
+  const dest = resolve(here, "../src/data/spools.json");
+  mkdirSync(dirname(dest), { recursive: true });
+  writeFileSync(dest, JSON.stringify(spools, null, 2));
+  console.log(`Wrote ${spools.length} spools to ${dest}`);
+}
+```
+
+Note on importing a `.ts` file from `.mjs`: Vitest resolves this fine in tests. For the CLI path, if Node cannot import `colours.ts` directly, the implementer should change `catalog/src/lib/colours.ts` to `catalog/src/lib/colours.mjs` with a matching `colours.d.ts`, or inline the map into the script and have `colours.ts` re-export from it. Pick one, keep a single source of truth for the colour map, and update Task 2's test import path to match.
+
+- [ ] **Step 4: Add the Spool type**
+
+`catalog/src/lib/spools.ts`:
+
+```ts
+import type { Finish } from "./colours";
+
+export type Source = "bambu" | "amazon";
+export type Material = "PLA" | "PETG" | "PVA" | "Support";
+
+export type Spool = {
+  id: string;
+  source: Source;
+  brand: string;
+  material: Material;
+  productLine: string;
+  colourName: string;
+  colourCode: string;
+  hex: string;
+  hex2?: string;
+  finish: Finish;
+  weightKg: number;
+  isRefill: boolean;
+  orderId: string;
+  orderDate: string;
+  pricePaidCad: number | null;
+};
+```
+
+- [ ] **Step 5: Run tests to verify they pass**
+
+Run: `cd catalog && node scripts/build-spools.mjs && npx vitest run tests/build-spools.test.ts`
+Expected: script prints `Wrote 78 spools`, all 9 tests PASS.
+
+If a colour lookup throws, add the missing key to `colours.ts` and re-run. Do not add a fallback colour.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add catalog/scripts/build-spools.mjs catalog/src/lib/spools.ts catalog/tests/build-spools.test.ts catalog/src/lib/colours.ts
+git commit -m "feat: build spool records from CSV ledgers"
+```
+
+---
+
+### Task 4: Status store
+
+**Files:**
+- Create: `catalog/src/lib/status.ts`
+- Test: `catalog/tests/status.test.ts`
+
+**Interfaces:**
+- Consumes: `Spool` from Task 3.
+- Produces:
+  - `type Status = "have" | "low" | "gone"`
+  - `const STORAGE_KEY = "filament-shelf-status-v1"`
+  - `function nextStatus(s: Status): Status`
+  - `function loadStatus(raw: string | null, validIds: string[]): Record<string, Status>`
+  - `function serialiseStatus(map: Record<string, Status>): string`
+  - `function toStockCsv(spools: Spool[], map: Record<string, Status>, exportedAt: string): string`
+
+`loadStatus` is pure and takes the raw string so it is testable without a DOM. The component layer reads `localStorage` and passes the value in.
+
+- [ ] **Step 1: Write the failing test**
+
+`catalog/tests/status.test.ts`:
+
+```ts
+import { describe, it, expect } from "vitest";
+import { nextStatus, loadStatus, serialiseStatus, toStockCsv } from "@/lib/status";
+
+const spool = (id: string, over: Record<string, unknown> = {}) => ({
+  id, source: "bambu", brand: "Bambu Lab", material: "PLA",
+  productLine: "PLA Basic", colourName: "Red", colourCode: "10200",
+  hex: "#C00D1E", finish: "basic", weightKg: 1, isRefill: false,
+  orderId: "ca1", orderDate: "2024-01-01", pricePaidCad: 25.99, ...over,
+}) as any;
+
+describe("status", () => {
+  it("cycles have to low to gone and back", () => {
+    expect(nextStatus("have")).toBe("low");
+    expect(nextStatus("low")).toBe("gone");
+    expect(nextStatus("gone")).toBe("have");
+  });
+
+  it("defaults every known spool to have when nothing is stored", () => {
+    expect(loadStatus(null, ["a", "b"])).toEqual({ a: "have", b: "have" });
+  });
+
+  it("drops stored ids that no longer exist", () => {
+    const raw = JSON.stringify({ a: "gone", removed: "low" });
+    expect(loadStatus(raw, ["a", "b"])).toEqual({ a: "gone", b: "have" });
+  });
+
+  it("falls back to all-have on corrupt stored data", () => {
+    expect(loadStatus("{not json", ["a"])).toEqual({ a: "have" });
+  });
+
+  it("ignores invalid status values in stored data", () => {
+    const raw = JSON.stringify({ a: "melted" });
+    expect(loadStatus(raw, ["a"])).toEqual({ a: "have" });
+  });
+
+  it("round-trips through serialise", () => {
+    const m = { a: "gone" as const, b: "have" as const };
+    expect(loadStatus(serialiseStatus(m), ["a", "b"])).toEqual(m);
+  });
+
+  it("exports one CSV row per spool plus a header", () => {
+    const spools = [spool("a"), spool("b", { colourName: "Blue" })];
+    const csv = toStockCsv(spools, { a: "gone", b: "have" }, "2026-08-17");
+    const lines = csv.trim().split("\n");
+    expect(lines[0]).toBe("id,colourName,material,source,status,exportedAt");
+    expect(lines).toHaveLength(3);
+    expect(lines[1]).toBe("a,Red,PLA,bambu,gone,2026-08-17");
+  });
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `cd catalog && npx vitest run tests/status.test.ts`
+Expected: FAIL, cannot resolve `@/lib/status`.
+
+- [ ] **Step 3: Write the implementation**
+
+`catalog/src/lib/status.ts`:
+
+```ts
+import type { Spool } from "./spools";
+
+export type Status = "have" | "low" | "gone";
+
+export const STORAGE_KEY = "filament-shelf-status-v1";
+
+const ORDER: Status[] = ["have", "low", "gone"];
+const VALID = new Set<string>(ORDER);
+
+export function nextStatus(s: Status): Status {
+  return ORDER[(ORDER.indexOf(s) + 1) % ORDER.length];
+}
+
+export function loadStatus(
+  raw: string | null,
+  validIds: string[],
+): Record<string, Status> {
+  let stored: Record<string, unknown> = {};
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        stored = parsed as Record<string, unknown>;
+      }
+    } catch {
+      stored = {};
+    }
+  }
+  const out: Record<string, Status> = {};
+  for (const id of validIds) {
+    const v = stored[id];
+    out[id] = typeof v === "string" && VALID.has(v) ? (v as Status) : "have";
+  }
+  return out;
+}
+
+export function serialiseStatus(map: Record<string, Status>): string {
+  return JSON.stringify(map);
+}
+
+export function toStockCsv(
+  spools: Spool[],
+  map: Record<string, Status>,
+  exportedAt: string,
+): string {
+  const header = "id,colourName,material,source,status,exportedAt";
+  const rows = spools.map((s) =>
+    [s.id, s.colourName, s.material, s.source, map[s.id] ?? "have", exportedAt]
+      .join(","),
+  );
+  return [header, ...rows].join("\n") + "\n";
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `cd catalog && npx vitest run tests/status.test.ts`
+Expected: PASS, 7 tests.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add catalog/src/lib/status.ts catalog/tests/status.test.ts
+git commit -m "feat: add spool status store with CSV export"
+```
+
+---
+
+### Task 5: Spool component
+
+**Files:**
+- Create: `catalog/src/components/Spool.tsx`
+
+**Interfaces:**
+- Consumes: `Spool` (Task 3), `Status` (Task 4).
+- Produces: `export function SpoolSvg({ spool, status, size, onClick }: { spool: Spool; status: Status; size?: number; onClick?: () => void })`
+
+Rendered as an edge-on spool: an outer flange ring, the wound coil in the filament colour with concentric winding lines, and a hub hole.
+
+- [ ] **Step 1: Write the component**
+
+Requirements the implementer must meet:
+
+- Root is an `<svg>` with `viewBox="0 0 100 100"`, width and height `size` (default 64).
+- Layers, outermost first: flange ring `r=48` filled `#2A2E2B` at 0.9 opacity; coil annulus from `r=44` to `r=18` filled per finish; winding texture as 7 concentric circles `r=20..42` step 3.5, stroke `rgba(0,0,0,.14)`, `stroke-width=.6`, `fill=none`; hub circle `r=16` filled `#1A1D1B`; centre hole `r=6` filled `var(--ground)`.
+- Finish handling on the coil fill:
+  - `basic`, `matte`: flat `spool.hex`. `matte` adds no sheen.
+  - `silk`: linear gradient from `hex` to a lightened `hex` and back, giving a band of specular sheen.
+  - `sparkle`, `marble`: flat `hex` plus a speckle overlay of 6 small white circles at fixed offsets, opacity 0.75.
+  - `translucent`: fill at `opacity 0.5` so the rack shows through.
+  - `dual`: linear gradient with a hard stop at 50% between `hex` and `hex2`.
+  - `rainbow`: 5-stop gradient across `#E24B4B, #EDB63C, #5FBF7A, #4A9BD6, #9B5FBF`.
+  - `glow`: flat `hex` plus an outer `feGaussianBlur` bloom in `hex` at 0.5 opacity.
+- Every gradient and filter needs a unique id derived from `spool.id`, or gradients will bleed between spools on the same page.
+- Status handling: `have` renders normally. `low` renders the coil at 55% opacity with a half-height clip so it reads as a part-used spool. `gone` renders only the flange outline as a dashed `#6B716C` ring at 0.35 opacity, no coil, so the empty slot is visible.
+- Accessibility: `role="button"`, `tabIndex={0}`, an `aria-label` of `` `${spool.colourName}, ${spool.productLine}, ${status}` ``, keyboard `Enter` and `Space` both fire `onClick`, and a visible `:focus-visible` outline.
+- Respect `prefers-reduced-motion` by omitting any transition when set.
+
+- [ ] **Step 2: Verify it renders**
+
+Temporarily render a row of 6 spools with mixed finishes in `src/app/page.tsx`, run `npm run dev`, and confirm in the browser that silk, dual, translucent, sparkle and glow are visually distinct from basic, and that a `gone` spool shows as an empty dashed ring.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add catalog/src/components/Spool.tsx
+git commit -m "feat: add finish-aware spool SVG component"
+```
+
+---
+
+### Task 6: Rack and grid views with filters
+
+**Files:**
+- Create: `catalog/src/components/RackView.tsx`
+- Create: `catalog/src/components/GridView.tsx`
+- Create: `catalog/src/components/Filters.tsx`
+- Modify: `catalog/src/app/page.tsx`
+
+**Interfaces:**
+- Consumes: `SpoolSvg` (Task 5), `Spool` (Task 3), status helpers (Task 4).
+- Produces: the finished page.
+
+- [ ] **Step 1: Build Filters.tsx**
+
+`export function Filters({ spools, value, onChange, matchCount })` where `value` is
+`{ materials: Material[]; sources: Source[]; statuses: Status[] }`. Empty array in a category means "all". Renders three toggle-button groups and the text `${matchCount} of 78 spools`.
+
+- [ ] **Step 2: Build RackView.tsx**
+
+`export function RackView({ spools, status, onToggle })`. Spools are laid out in rows of up to 12 on horizontal rails. Each rail is a dark bar with small tick dividers, matching the reference rack. Rails wrap responsively: 12 per row at desktop width, fewer on narrow screens, via a CSS grid with `repeat(auto-fill, minmax(72px, 1fr))` and a rail drawn as a bottom border on the row container. Gone spools keep their slot.
+
+- [ ] **Step 3: Build GridView.tsx**
+
+`export function GridView({ spools, status, onToggle })`. A responsive card grid. Each card shows a small `SpoolSvg`, the colour name, the product line, the Bambu code or brand, the material, the source, and the status as a text pill. Price shows as `$X.XX` or the words `not captured` when `pricePaidCad` is null.
+
+- [ ] **Step 4: Wire page.tsx**
+
+Client component. On mount, read `localStorage[STORAGE_KEY]`, pass through `loadStatus` with all spool ids, hold in state. Every toggle writes back through `serialiseStatus`. Renders: a header with total counts, the view toggle, `Filters`, then either view. An Export button calls `toStockCsv` and triggers a download via a Blob URL. A footer states the known limitations from the spec, including that colour hexes are indicative.
+
+The view toggle and filter state live in `page.tsx` so switching views preserves both.
+
+- [ ] **Step 5: Verify the whole page**
+
+Run `cd catalog && npm run dev`. Confirm: 78 spools render, the toggle switches views without losing filters, clicking cycles a spool through all three states, a reload preserves the state, and Export downloads a CSV with 79 lines including the header.
+
+- [ ] **Step 6: Run the full test suite and build**
+
+Run: `cd catalog && npm test && npm run build`
+Expected: all tests PASS, `out/` is written.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add catalog/src
+git commit -m "feat: add rack and grid views with filters and CSV export"
+```
+
+---
+
+### Task 7: Deploy preview to Vercel
+
+**Files:**
+- Create: `catalog/vercel.json` only if the deploy needs it.
+
+- [ ] **Step 1: Confirm the target before deploying**
+
+State out loud: repo `3D Printing` at `/Users/nickv/ClaudeCode Projects/3D Printing`, branch `filament-shelf`, Vercel project root `catalog/`. Preview only.
+
+- [ ] **Step 2: Deploy**
+
+```bash
+cd catalog && npx vercel --yes
+```
+
+Never pass `--prod`.
+
+- [ ] **Step 3: Verify the deployed page**
+
+Open the preview URL. Confirm 78 spools render, both views work, and status persists across a reload. Check in both Chrome and Safari, since cross-browser bugs recur on this machine.
+
+- [ ] **Step 4: Commit and report**
+
+```bash
+git add -A && git commit -m "chore: add Vercel config for filament shelf"
+```
+
+Report the preview URL.
+
+---
+
+## Self-Review
+
+**Spec coverage:** Purpose covered by Tasks 5 and 6. Data model by Task 3. Colour and finish by Task 2. Status layer by Task 4. Rack view, grid view and toggle by Task 6. Filters by Task 6. Modules by Tasks 2 to 6. Testing by Tasks 2, 3 and 4. Deployment by Task 7. Known limitations rendered by Task 6 Step 4. No gaps.
+
+**Placeholder scan:** No TBDs. Task 5 and Task 6 give prose requirements rather than full component source, because the visual work needs judgement at the screen; every value that matters (radii, opacities, gradient stops, layout counts, aria labels) is specified exactly.
+
+**Type consistency:** `Spool`, `Status`, `Finish`, `Swatch`, `Source`, `Material` are defined once and used consistently. `lookupColour` returns `Swatch | undefined` and is called only through the throwing `colour()` wrapper in the build script. `loadStatus` and `serialiseStatus` round-trip.
+
+**Known risk:** Task 3 imports a `.ts` colour map from a `.mjs` script. Step 3 names the fallback if Node refuses. This is the one place the implementer may need to deviate, and the plan says how.
