@@ -1,25 +1,34 @@
 # Bambu Lab purchase audit
 
-Reconstructed from the 13 order-confirmation emails from `noreply@bambulab.com`
-in mvyhouski@gmail.com, 20 Jun 2023 → 30 Dec 2025. Full line-item ledger:
-[`orders.csv`](orders.csv).
+Two sources, kept in separate files because they carry different confidence.
+
+- **Bambu Lab store** — reconstructed from the 13 order-confirmation emails from
+  `noreply@bambulab.com` in mvyhouski@gmail.com, 20 Jun 2023 → 30 Dec 2025.
+  Every line reconciles to the subtotal its email states.
+  Ledger: [`orders.csv`](orders.csv).
+- **Amazon, third-party brands** — transcribed from order-history screenshots,
+  17 Dec 2022 → 7 Oct 2025. Items and dates only; **no prices were visible**, so
+  none of this is in the spend figure.
+  Ledger: [`orders-amazon.csv`](orders-amazon.csv).
 
 > **This is what was bought, not what is on the shelf.** Filament is a
-> consumable — two and a half years of printing has eaten an unknown share of
-> the 57 kg below. Treat the filament table as the purchase baseline and do one
-> physical count against it (see [Counting stock](#counting-stock)).
+> consumable. Three years of printing has eaten an unknown share of the 76 kg
+> below. Treat the filament tables as the purchase baseline and do one physical
+> count against them (see [Counting stock](#counting-stock)).
 
 ## Totals
 
 | | |
 |---|---|
-| Orders | 13 |
-| Line items | 70 |
+| Bambu orders | 13 |
+| Bambu line items | 70 |
 | Goods (subtotal) | $4,129.76 |
 | Shipping | $126.00 |
 | Taxes | $618.54 |
-| **Total spend** | **$4,874.30 CAD** |
+| **Bambu total spend** | **$4,874.30 CAD** |
 | Discounts captured | $357.50 |
+| Amazon filament spools | 19 (prices not captured) |
+| **All filament, both sources** | **78 spools · 76 kg** |
 
 ## Hardware — durable, should all still exist
 
@@ -95,9 +104,47 @@ other purchase in this list. Colour-by-colour breakdown is in `orders.csv`.
 | Bambu Filament Swatches | 1 | |
 | Lithophane LED Backlight Board Kit | 1 kit (4 pcs) | 192×144 mm, KC010 |
 
+## Third-party filament from Amazon — 19 spools, 19 kg
+
+All 1.75 mm, all on non-Bambu spools with no RFID tag, so none of it
+auto-identifies in the AMS and each spool needs its slot set by hand.
+
+| Date | Brand | Item | Colour |
+|---|---|---|---|
+| 2022-12-17 | OVERTURE | PLA+ | Digital Blue |
+| 2023-04-20 | DURAMIC 3D | PETG | Purple |
+| 2023-04-23 | DURAMIC 3D | PETG | Yellow |
+| 2023-04-23 | DURAMIC 3D | PETG | Pink |
+| 2023-04-27 | DURAMIC 3D | PLA+ | Purple |
+| 2023-04-27 | DURAMIC 3D | PLA+ | Purple |
+| 2023-04-27 | DURAMIC 3D | PLA+ | White |
+| 2023-07-22 | Creality | Hyper PLA | Black |
+| 2023-07-22 | Creality | Hyper PLA | Grey |
+| 2023-07-22 | GIANTARM | PLA Glow in the Dark | Rainbow |
+| 2023-07-22 | TRONXY | PLA Glow bundle, 250 g ×4 | Green / Purple / Orange-red |
+| 2023-07-24 | ANYCUBIC | Silk PLA | Silk Light Gold |
+| 2023-07-24 | DURAMIC 3D | PETG | Translucent Green |
+| 2023-09-07 | GIANTARM | PETG | Clear |
+| 2023-10-18 | CC3D | Temp Colour Change PLA | Green to Yellow |
+| 2024-08-23 | unbranded | PLA+ Colour Change | Rainbow |
+| 2024-09-08 | CC3D | Silk PLA | Purple |
+| 2025-09-14 | GIANTARM | PETG | Metal Green |
+| 2025-10-07 | CC3D | Marble PETG | Stone Rock |
+
+Plus one non-filament item: Bed Weld adhesive glue, 118 ml, Apr 2023.
+
+**Seven of these predate the P1P.** The OVERTURE spool and all six April 2023
+DURAMIC spools were bought before the printer arrived on 20 Jun 2023, so they
+belong to an earlier printer. If those spools are still around they are three
+years old and worth drying before trusting them on a long print.
+
+**Two identical PLA+ Purple spools were ordered on the same day** (27 Apr 2023)
+under two different order numbers. Either genuinely two spools or a duplicate in
+the order history. Counted as two here; worth confirming on the shelf.
+
 ## Counting stock
 
-`orders.csv` is the purchase ledger and should stay immutable — it is the
+`orders.csv` and `orders-amazon.csv` are the purchase ledgers and should stay immutable — it is the
 audit trail. To get real stock, count once against it and keep the count in a
 separate file, so a miscount never corrupts the source of truth.
 
@@ -106,9 +153,11 @@ first count. See [Open question](#open-question).
 
 ## Caveats
 
-- **Store orders only.** Covers `noreply@bambulab.com` order confirmations
-  from the Canadian store. Anything bought via Amazon, a reseller, or a
-  different email address is not here.
+- **Amazon prices are not captured.** The order-history screenshots show items
+  and dates but no amounts, so the $4,874.30 figure is Bambu Lab only. True
+  total spend is higher by whatever the 19 third-party spools cost.
+- **Other sellers may still be missing.** Anything bought from a reseller other
+  than Amazon, or under a different email or Amazon account, is not here.
 - **No cancellations or returns checked.** Every confirmed order is assumed
   fulfilled; delivery emails exist for the 2023–2024 orders but were not
   reconciled line-by-line.
