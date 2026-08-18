@@ -1,0 +1,40 @@
+{
+ "csign_airgap": {
+  "colours": [
+   "W",
+   "K",
+   "Y",
+   "B"
+  ],
+  "faces": 238,
+  "objects": 4,
+  "tris": 73644,
+  "mm": true,
+  "solid": true
+ },
+ "csign_clankers": {
+  "colours": [
+   "W",
+   "K",
+   "Y",
+   "B"
+  ],
+  "faces": 216,
+  "objects": 4,
+  "tris": 79404,
+  "mm": true,
+  "solid": true
+ },
+ "csign_bilingual": {
+  "colours": [
+   "W",
+   "K",
+   "B"
+  ],
+  "faces": 301,
+  "objects": 3,
+  "tris": 106059,
+  "mm": true,
+  "solid": true
+ }
+}

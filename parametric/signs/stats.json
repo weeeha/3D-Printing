@@ -1,0 +1,45 @@
+{
+ "sign_airgap": {
+  "scale": 0.927,
+  "min_cap": 4.63,
+  "glyphs": 254,
+  "tris_plate": 39878,
+  "tris_art": 38606,
+  "solid": true,
+  "files": [
+   "sign_airgap.3mf",
+   "sign_airgap_plate.stl",
+   "sign_airgap_artwork.stl",
+   "sign_airgap.FCStd"
+  ]
+ },
+ "sign_clankers": {
+  "scale": 0.958,
+  "min_cap": 4.79,
+  "glyphs": 237,
+  "tris_plate": 42618,
+  "tris_art": 41414,
+  "solid": true,
+  "files": [
+   "sign_clankers.3mf",
+   "sign_clankers_plate.stl",
+   "sign_clankers_artwork.stl",
+   "sign_clankers.FCStd"
+  ]
+ },
+ "sign_bilingual": {
+  "scale": 0.896,
+  "min_cap": 4.66,
+  "glyphs": 299,
+  "tris_plate": 44908,
+  "tris_art": 43484,
+  "solid": true,
+  "files": [
+   "sign_bilingual.3mf",
+   "sign_bilingual_plate.stl",
+   "sign_bilingual_artwork.stl",
+   "sign_bilingual.FCStd"
+  ]
+ },
+ "_freecad": "1.1.1"
+}

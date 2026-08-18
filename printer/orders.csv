@@ -1,0 +1,71 @@
+order_id,order_date,category,item,variant,qty,line_paid_cad
+ca251182612,2023-06-20,printer,Bambu Lab P1P 3D Printer,,1,899.00
+ca251507612,2023-07-24,filament,PLA Sparkle,Crimson Red Sparkle (#792B36) / 1kg,1,38.99
+ca251507612,2023-07-24,hotend,Complete Hotend Assembly - P1 Series,0.2mm Stainless Steel,1,44.99
+ca251507612,2023-07-24,hardware,Bambu Textured PEI Plate,X1/P1 Series,1,48.99
+ca251622712,2023-08-05,support,Support for PLA,Black / 0.5kg,1,44.99
+ca251622712,2023-08-05,filament,PLA Basic,Red (#C00D1E) / 1kg,1,35.99
+ca251622712,2023-08-05,filament,PLA Matte,Matte Charcoal / 1kg,1,35.99
+ca251622712,2023-08-05,filament,PLA Silk,Gold (#FFC600) / 1kg,1,38.99
+ca251622712,2023-08-05,filament,PETG Basic,White / 1kg,1,35.99
+ca251622712,2023-08-05,ams,Bambu Lab AMS - Automatic Material System,X1/P1 Series,1,449.00
+ca251685112,2023-08-12,support,Support for PA/PET,0.5kg,1,50.99
+ca251685112,2023-08-12,filament,PETG Basic,Black / 1kg,1,35.99
+ca251685112,2023-08-12,filament,PLA Tough,Black (#25282A) / 1kg,1,36.99
+ca251685112,2023-08-12,filament,PLA Tough,Pine Green (#00482B) / 1kg,1,36.99
+ca251685112,2023-08-12,filament,PLA Sparkle,Royal Purple Sparkle (#483D8B) / 1kg,1,38.99
+ca252449112,2023-10-27,filament,PLA Basic,Beige (10201) / 1kg,1,27.99
+ca252449112,2023-10-27,filament,PLA Silk,Silver (13104) / 1kg,1,38.99
+ca252449112,2023-10-27,filament,PLA Basic,Magenta (10202) / 1kg,1,27.99
+ca252449112,2023-10-27,filament,PETG Basic,Purple (30700) / 1kg,1,27.99
+ca255613812,2024-03-31,hardware,P1P Enclosure Kit,P1P,1,253.00
+ca255738612,2024-04-06,filament,PLA Matte,Matte Scarlet Red (11200) / 1kg,1,25.99
+ca255738612,2024-04-06,filament,PLA Matte,Matte Ivory White (11100) / 1kg,1,25.99
+ca255738612,2024-04-06,filament,PLA Matte,Matte Charcoal (11101) / 1kg,1,25.99
+ca255738612,2024-04-06,filament,PETG Basic,White (30100) / 1kg,2,51.98
+ca255738612,2024-04-06,filament,PETG Basic,Black (30101) / 1kg,2,51.98
+ca256246412,2024-05-01,filament,PETG Translucent,Clear (32101) / 1kg,1,25.99
+ca256246412,2024-05-01,filament,PLA Basic,Blue Grey (10602) / 1kg,1,25.99
+ca256246412,2024-05-01,filament,PLA Basic,Orange (10300) / 1kg,1,25.99
+ca256246412,2024-05-01,filament,PLA Basic,Mistletoe Green (10502) / 1kg,1,25.99
+ca256246412,2024-05-01,filament,PLA Matte,Matte Lemon Yellow (11400) / 1kg,1,25.99
+ca256246412,2024-05-01,filament,PLA Sparkle,Onyx Black Sparkle (13101) / 1kg,1,38.99
+ca256246412,2024-05-01,filament,PLA Silk,Gold (13401) / 1kg,1,38.99
+ca256246412,2024-05-01,filament,PLA Basic,Purple (10700) / Refill / 1kg,1,21.99
+ca256246412,2024-05-01,filament,PLA Silk,Purple (13701) / 1kg,1,38.99
+ca256246412,2024-05-01,filament,PETG Basic,Gold (30401) / 1kg,1,25.99
+ca256246412,2024-05-01,filament,PETG Basic,Lake Blue (30602) / 1kg,1,25.99
+ca256246412,2024-05-01,filament,PETG Basic,Nature (30104) / 1kg,1,25.99
+ca256246412,2024-05-01,filament,PLA Silk Dual Color,Gilded Rose (Pink-Gold) / 1kg,1,38.99
+ca256246412,2024-05-01,support,PVA,Clear (66400) / 0.5kg,1,50.99
+ca256246412,2024-05-01,accessory,Bambu Filament Swatches,,1,12.99
+ca256246412,2024-05-01,ams,Bambu Lab AMS Hub,X1/P1 Series,1,59.99
+ca256246412,2024-05-01,accessory,Bambu Bus Cable,6pin 1500mm (Hub to AMS),1,7.99
+ca256246412,2024-05-01,accessory,Bambu PTFE Tube,4000mm / Grey,1,12.99
+ca256246412,2024-05-01,ams,Bambu Lab AMS - Automatic Material System,X1/P1 Series,1,449.00
+ca257066812,2024-06-06,filament,PLA Basic,Yellow (10400) / Refill / 1kg,1,19.99
+ca257066812,2024-06-06,filament,PLA Matte,Matte Sakura Pink (11201) / 1kg,2,47.98
+ca257066812,2024-06-06,filament,PLA Matte,Matte Marine Blue (11600) / 1kg,1,23.99
+ca257066812,2024-06-06,filament,PLA Matte,Matte Ice Blue (11601) / 1kg,1,23.99
+ca259915412,2024-09-15,accessory,AMS Feeding Funnel,AMS,1,9.27
+ca259915412,2024-09-15,spare,Hardened Steel Extruder Gear Assembly,X1/P1 Series,1,21.94
+ca259915412,2024-09-15,spare,Nozzle Wiper,X1/P1 Series,1,5.06
+ca259915412,2024-09-15,spare,Silicone Sock for Hotend,X1/P1 Series,1,7.59
+ca259915412,2024-09-15,spare,Replacement Filament Cutter,X1/P1/A1 Series,1,4.21
+ca259915412,2024-09-15,accessory,PTFE Tubes,4000mm / White,1,10.96
+ca259915412,2024-09-15,accessory,PTFE Tube Connector,X1/P1 Series,1,5.90
+ca259915412,2024-09-15,accessory,Bambu Scraper 3 pcs,All Series,1,5.06
+ca259915412,2024-09-15,accessory,Anti-Vibration Feet,X1/P1 Series,1,12.99
+ca259915412,2024-09-15,support,Support for PLA/PETG,Nature (65102) / 0.5kg,1,44.99
+ca259915412,2024-09-15,accessory,Bambu 4-in-1 PTFE Adapter,X1/P1 Series,1,6.99
+ca259915412,2024-09-15,filament,PLA Galaxy,Purple (13602) / 1kg,1,31.99
+ca259915412,2024-09-15,accessory,Desiccant for AMS (6 pack),X1/P1 Series,2,11.98
+ca259915412,2024-09-15,filament,PLA Silk Dual Color,Neon City (Blue-Magenta) / 1kg,1,31.99
+ca2510054912,2024-09-19,accessory,Lithophane LED Backlight Board Kit,192x144mm (4 pcs) - KC010,1,18.98
+ca2510054912,2024-09-19,filament,PLA CMYK Lithophane Bundle,Cyan/Magenta/Yellow/Black / 1kg x4,1,89.99
+ca644191913257447425,2025-09-15,filament,PETG Translucent,Translucent Olive (32500) / Refill / 1kg,1,25.99
+ca644191913257447425,2025-09-15,filament,PLA Matte Refill Pack 10 Rolls,Matte Ivory White + Charcoal (11100/11101) / 1kg x10,1,129.90
+ca644191913257447425,2025-09-15,hotend,Bambu Hotend - P1 Series,0.4mm Hardened Steel / Complete Hotend,1,44.99
+ca682335822770671617,2025-12-30,hotend,Bambu Hotend - P1 Series,0.4mm Hardened Steel / Hotend only,2,35.98
+ca682335822770671617,2025-12-30,hotend,Bambu Hotend - P1 Series,0.8mm Hardened Steel / Complete Hotend,1,40.49
+ca682335822770671617,2025-12-30,accessory,Bambu Scraper 3 pcs,All Series,1,5.99
