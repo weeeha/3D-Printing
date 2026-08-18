@@ -29,13 +29,13 @@ export const COLOURS = {
 
   // --- Bambu PLA Matte ---
   "11100": { hex: "#FFFFFF", finish: "matte" },
-  "11101": { hex: "#1A1A1A", finish: "matte" },
+  "11101": { hex: "#000000", finish: "matte" }, // verified from printer RFID
   "11200": { hex: "#DE4343", finish: "matte" },
   "11201": { hex: "#E8AFCF", finish: "matte" },
   "11400": { hex: "#F7D959", finish: "matte" },
   "11600": { hex: "#0078BF", finish: "matte" },
   "11601": { hex: "#A3D8E1", finish: "matte" },
-  "matte charcoal": { hex: "#1A1A1A", finish: "matte" },
+  "matte charcoal": { hex: "#000000", finish: "matte" }, // verified from printer RFID
 
   // --- Bambu PLA Silk ---
   "13104": { hex: "#A6A9AA", finish: "silk" },
@@ -59,7 +59,7 @@ export const COLOURS = {
   "black": { hex: "#25282A", finish: "basic" },
 
   // --- Bambu CMYK lithophane bundle ---
-  "litho cyan": { hex: "#00A5DF", finish: "basic" },
+  "litho cyan": { hex: "#0086D6", finish: "basic" }, // verified from printer RFID (A00-B8)
   "litho magenta": { hex: "#EC008C", finish: "basic" },
   "litho yellow": { hex: "#F4EE2A", finish: "basic" },
   "litho black": { hex: "#0D0D0D", finish: "basic" },

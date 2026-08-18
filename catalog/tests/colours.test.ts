@@ -3,7 +3,7 @@ import { COLOURS, lookupColour } from "@/lib/colours.mjs";
 
 describe("colours", () => {
   it("resolves a Bambu colour code to a hex and finish", () => {
-    expect(lookupColour("11101")).toEqual({ hex: "#1A1A1A", finish: "matte" });
+    expect(lookupColour("11101")).toEqual({ hex: "#000000", finish: "matte" });
   });
 
   it("resolves a third-party key by brand, line and colour name", () => {
