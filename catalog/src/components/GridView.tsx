@@ -15,14 +15,17 @@ function price(p: number | null): string {
   return p === null ? "not captured" : `$${p.toFixed(2)}`;
 }
 
+import type { Section } from "./RackView";
+
 export function GridView({
-  spools, status, onToggle,
+  sections, status, onToggle,
 }: {
-  spools: Spool[];
+  sections: Section[];
   status: Record<string, Status>;
   onToggle: (id: string) => void;
 }) {
-  if (spools.length === 0) {
+  const total = sections.reduce((t, s) => t + s.spools.length, 0);
+  if (total === 0) {
     return (
       <p className="py-16 text-center text-sm text-[var(--muted)]">
         No spools match these filters.
@@ -31,9 +34,22 @@ export function GridView({
   }
 
   return (
-    <div className="grid gap-px bg-[var(--rule)] border border-[var(--rule)]
-                    grid-cols-[repeat(auto-fill,minmax(210px,1fr))]">
-      {spools.map((s) => {
+    <div className="flex flex-col gap-6">
+      {sections.map((section) => (
+        <div key={section.family ?? "all"} className="flex flex-col gap-2">
+          {section.family && (
+            <div className="flex items-baseline gap-3">
+              <span className="text-[11px] uppercase tracking-[0.14em]">
+                {section.family}
+              </span>
+              <span className="text-[10.5px] text-[var(--muted)]">
+                {section.spools.length}
+              </span>
+            </div>
+          )}
+          <div className="grid gap-px bg-[var(--rule)] border border-[var(--rule)]
+                          grid-cols-[repeat(auto-fill,minmax(210px,1fr))]">
+            {section.spools.map((s) => {
         const st = status[s.id] ?? "have";
         return (
           <div key={s.id} className="bg-[var(--surface)] p-3 flex gap-3 items-start">
@@ -58,7 +74,10 @@ export function GridView({
             </div>
           </div>
         );
-      })}
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

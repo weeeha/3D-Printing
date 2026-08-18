@@ -8,8 +8,9 @@ import {
   type Status,
 } from "@/lib/status";
 import { Filters, EMPTY_FILTERS, type FilterState } from "@/components/Filters";
-import { RackView } from "@/components/RackView";
+import { RackView, type Section } from "@/components/RackView";
 import { GridView } from "@/components/GridView";
+import { sortSpools, groupByColour, type SortKey } from "@/lib/colour-sort";
 
 const SPOOLS = rawSpools as Spool[];
 const IDS = SPOOLS.map((s) => s.id);
@@ -21,6 +22,14 @@ const AMAZON = SPOOLS.length - BAMBU;
 export default function Home() {
   const [view, setView] = useState<"rack" | "grid">("rack");
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
+  // Each view remembers its own ordering. A rack is a physical shelf, so it
+  // defaults to colour; the grid is a ledger, so it defaults to purchase date.
+  const [sortByView, setSortByView] = useState<Record<"rack" | "grid", SortKey>>({
+    rack: "colour",
+    grid: "date",
+  });
+  const [grouped, setGrouped] = useState(false);
+  const sort = sortByView[view];
   const [status, setStatus] = useState<Record<string, Status>>(() =>
     loadStatus(null, IDS),
   );
@@ -49,6 +58,15 @@ export default function Home() {
       }),
     [filters, status],
   );
+
+  const sections: Section[] = useMemo(() => {
+    const ordered = sortSpools(visible, sort, status);
+    if (!grouped) return [{ family: null, spools: ordered }];
+    return groupByColour(ordered).map((g) => ({
+      family: g.family,
+      spools: g.spools,
+    }));
+  }, [visible, sort, grouped, status]);
 
   const counts = useMemo(() => {
     let have = 0, low = 0, gone = 0;
@@ -137,13 +155,21 @@ export default function Home() {
         </span>
       </div>
 
-      <Filters value={filters} onChange={setFilters}
-        matchCount={visible.length} total={SPOOLS.length} />
+      <Filters
+        value={filters}
+        onChange={setFilters}
+        matchCount={visible.length}
+        total={SPOOLS.length}
+        sort={sort}
+        onSortChange={(k) => setSortByView((prev) => ({ ...prev, [view]: k }))}
+        grouped={grouped}
+        onGroupedChange={setGrouped}
+      />
 
       {view === "rack" ? (
-        <RackView spools={visible} status={status} onToggle={toggle} />
+        <RackView sections={sections} status={status} onToggle={toggle} />
       ) : (
-        <GridView spools={visible} status={status} onToggle={toggle} />
+        <GridView sections={sections} status={status} onToggle={toggle} />
       )}
 
       <footer className="border-t border-[var(--rule)] pt-6 flex flex-col gap-3

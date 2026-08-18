@@ -3,6 +3,7 @@
 import type { Material, Source } from "@/lib/spools";
 import type { Status } from "@/lib/status";
 import { STATUS_LABEL } from "@/lib/status";
+import { SORT_LABEL, type SortKey } from "@/lib/colour-sort";
 
 export type FilterState = {
   materials: Material[];
@@ -57,13 +58,19 @@ function Group<T extends string>({
   );
 }
 
+const SORTS: SortKey[] = ["date", "colour", "material", "status"];
+
 export function Filters({
-  value, onChange, matchCount, total,
+  value, onChange, matchCount, total, sort, onSortChange, grouped, onGroupedChange,
 }: {
   value: FilterState;
   onChange: (v: FilterState) => void;
   matchCount: number;
   total: number;
+  sort: SortKey;
+  onSortChange: (k: SortKey) => void;
+  grouped: boolean;
+  onGroupedChange: (g: boolean) => void;
 }) {
   return (
     <div className="flex flex-col gap-3 border-y border-[var(--rule)] py-4">
@@ -76,6 +83,39 @@ export function Filters({
       <Group label="Status" options={STATUSES} selected={value.statuses}
         onToggle={(s) => onChange({ ...value, statuses: toggle(value.statuses, s) })}
         render={(s) => STATUS_LABEL[s]} />
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[10px] uppercase tracking-[0.14em] text-[var(--muted)] w-16 shrink-0">
+          Sort
+        </span>
+        {SORTS.map((k) => (
+          <button
+            key={k}
+            type="button"
+            onClick={() => onSortChange(k)}
+            aria-pressed={sort === k}
+            className={`px-2.5 py-1 text-[11px] border transition-colors ${
+              sort === k
+                ? "border-[var(--accent)] text-[var(--accent)]"
+                : "border-[var(--rule)] text-[var(--muted)] hover:border-[var(--muted)]"
+            }`}
+          >
+            {SORT_LABEL[k]}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => onGroupedChange(!grouped)}
+          aria-pressed={grouped}
+          className={`ml-1 px-2.5 py-1 text-[11px] border transition-colors ${
+            grouped
+              ? "border-[var(--accent)] text-[var(--accent)]"
+              : "border-[var(--rule)] text-[var(--muted)] hover:border-[var(--muted)]"
+          }`}
+        >
+          Group by colour
+        </button>
+      </div>
+
       <div className="flex items-center gap-3 text-[11px] text-[var(--muted)]">
         <span>{matchCount} of {total} spools</span>
         {(value.materials.length || value.sources.length || value.statuses.length) > 0 && (
