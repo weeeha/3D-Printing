@@ -2,8 +2,8 @@
 smallclock enclosure: round puck + back lid + desk cradle for the
 Waveshare 3.4inch DSI LCD (C) with a Raspberry Pi 4B on its back.
 
-Phase 2: features (lid posts into the panel's M4 holes, vents, cable path,
-cradle with back stop and cable channel). No cosmetic fillets yet.
+Phase 3: final. Edge finishing on all parts; chamfers on every edge that
+touches the bed (a fillet there would need support), fillets elsewhere.
 
 How it holds together: the display drops into the shell from the back and
 rests against the front lip. The lid's 4 posts land on the panel's back
@@ -76,6 +76,15 @@ cable_channel_w = 7.5   # mm - cable path through stop and tail
 foot_d = 8.2            # mm - recesses for 8 mm stick-on bumpers
 foot_depth = 1.0        # mm
 
+# Edge finishing
+front_chamfer = 1.0     # mm - shell front outer edge (bed side)
+window_chamfer = 1.0    # mm - bevel around the display window (bed side)
+back_round = 0.8        # mm - shell back outer edge
+lid_chamfer = 1.0       # mm - lid outer edge (bed side, reads as the back edge)
+cradle_corner_r = 4.0   # mm - cradle vertical corners
+cradle_top_round = 1.5  # mm - cradle top edges
+cradle_foot_chamfer = 0.6  # mm - cradle bottom edge, counters elephant's foot
+
 # ============================================================
 # DERIVED
 # ============================================================
@@ -98,9 +107,17 @@ post_xy = [(sx * m4_square / 2, sy * m4_square / 2) for sx in (1, -1) for sy in 
 # ============================================================
 # SHELL
 # ============================================================
-shell = cq.Workplane("XY").circle(outer_r).extrude(body_depth)
+# finish the outer edges while the body is still a plain cylinder
+shell = (cq.Workplane("XY").circle(outer_r).extrude(body_depth)
+         .faces("<Z").edges().chamfer(front_chamfer)
+         .faces(">Z").edges().fillet(back_round))
 shell = shell.cut(
     cq.Workplane("XY").circle(front_open_r).extrude(lip_t + 0.02).translate((0, 0, -0.01)))
+# 45 degree bevel around the window, cut as a cone (edge selection is
+# ambiguous here: every front circle is centred on the axis)
+bevel = cq.Solid.makeCone(front_open_r + window_chamfer + 0.01, front_open_r,
+                          window_chamfer + 0.01, cq.Vector(0, 0, -0.01))
+shell = shell.cut(cq.Workplane("XY").add(bevel))
 shell = shell.cut(
     cq.Workplane("XY").workplane(offset=lip_t).circle(bore_r).extrude(body_depth))
 # power cable exit at 6 o'clock on the back rim
@@ -113,7 +130,8 @@ shell = shell.cut(
 # LID  (modelled in body coords, Z from body_depth to lid_outer_z)
 # ============================================================
 lid = (cq.Workplane("XY").workplane(offset=body_depth)
-       .circle(outer_r).extrude(lid_t))
+       .circle(outer_r).extrude(lid_t)
+       .faces(">Z").edges().chamfer(lid_chamfer))
 # locating ring into the bore, with a gap for the cable at 6 o'clock
 plug_or = bore_r - 0.3
 plug = (cq.Workplane("XY").workplane(offset=body_depth - plug_h)
@@ -172,13 +190,15 @@ y_stop = low[1] - stop_t
 y_tail = y_stop - tail_len
 top_z = cradle_floor + cradle_wrap
 
-block = (cq.Workplane("XY")
-         .box(cradle_w, y_front - y_stop, top_z, centered=(True, False, False))
-         .translate((0, y_stop, 0)))
-tail = (cq.Workplane("XY")
-        .box(cradle_w, y_stop - y_tail + 0.01, tail_h, centered=(True, False, False))
-        .translate((0, y_tail, 0)))
-cradle = block.union(tail)
+# one L-shaped side profile (tall block + low tail), extruded across X,
+# so the edges can be finished before any cut
+profile = [(y_tail, 0), (y_front, 0), (y_front, top_z), (y_stop, top_z),
+           (y_stop, tail_h), (y_tail, tail_h)]
+cradle = (cq.Workplane("YZ").polyline(profile).close()
+          .extrude(cradle_w / 2, both=True)
+          .edges("|Z").fillet(cradle_corner_r)
+          .faces(">Z").edges().fillet(cradle_top_round)
+          .faces("<Z").edges().chamfer(cradle_foot_chamfer))
 
 # saddle: the puck envelope (shell + lid) with clearance
 envelope = cq.Workplane("XY").circle(outer_r + cradle_clear).extrude(lid_outer_z + cradle_clear)
@@ -208,6 +228,9 @@ T = dict(tolerance=0.01, angularTolerance=0.1)
 cq.exporters.export(shell_print, "smallclock_shell.stl", **T)
 cq.exporters.export(lid_print, "smallclock_lid.stl", **T)
 cq.exporters.export(cradle_print, "smallclock_cradle.stl", **T)
+# 3MF via CadQuery's native writer (keeps cavities intact, unlike STL->3MF conversion)
+for name, part in (("shell", shell_print), ("lid", lid_print), ("cradle", cradle_print)):
+    cq.exporters.export(part, f"smallclock_{name}.3mf", **T)
 
 cbb = cradle.val().BoundingBox()
 print(f"shell  Ø{2*outer_r:.1f} x {body_depth:.1f} mm, rear gap behind Pi {rear_gap:.1f} mm")

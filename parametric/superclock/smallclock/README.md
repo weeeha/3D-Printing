@@ -7,7 +7,35 @@ Source of truth: `smallclock_enclosure.py` (CadQuery). Run it with the cad-skill
 
     ~/ClaudeCode\ Projects/cad-skill/.venv/bin/python smallclock_enclosure.py
 
-It writes `smallclock_shell.stl`, `smallclock_lid.stl`, `smallclock_cradle.stl`, each in its print orientation.
+It writes STL + 3MF for the shell, lid and cradle, each in its print orientation.
+Print-ready copies are in `print/smallclock/`.
+
+Status: **designed and checked in CadQuery, not printed yet.** The first print is the real fit test.
+
+## Print settings (Bambu P1S, 0.4 mm nozzle)
+
+| Part | Orientation | Settings |
+|---|---|---|
+| Shell | front face down | PETG, 0.2 mm, 3 walls, 15% gyroid, no supports |
+| Lid | outer face down | PETG, 0.2 mm, 4 walls (the posts are mostly wall), 15% gyroid, no supports |
+| Cradle | flat bottom down | PETG, 0.2 mm, 3 walls, 15% gyroid, no supports |
+
+PETG because a Pi 4 behind a screen runs warm and PLA softens from about 55 C.
+Checked in the analysis: no overhangs past 45 degrees on any part; the only bridges are the
+four 8 mm bumper recess ceilings under the cradle.
+
+## Key parameters
+
+| Parameter | Value |
+|---|---|
+| Outer diameter | 120.6 mm |
+| Shell depth | 41.9 mm (+ 3 mm lid) |
+| Wall | 2.4 mm |
+| Glass clearance | 0.4 mm radial |
+| Front lip overlap | 3.0 mm (window Ø109, bevel to Ø111; active area Ø87.6) |
+| Tilt | 15 degrees |
+| Cradle footprint | 100 x 75 mm |
+| Post preload | 0.2 mm |
 
 Status: **Phase 2 (features), not printed yet.**
 
