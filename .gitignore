@@ -4,6 +4,7 @@
 *.STEP
 *.obj
 !**/print/**/*.stl
+!scans/**/*.stl
 
 # --- CAD scratch / backups ---
 *.FCBak

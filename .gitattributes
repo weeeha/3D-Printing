@@ -6,3 +6,16 @@
 
 # CAD binary formats: mark binary so git never tries to merge them.
 *.FCStd binary
+
+# Mac 3D archive (2026-09-28): texturing projects, scans and big print meshes.
+*.spp   filter=lfs diff=lfs merge=lfs -text
+*.ply   filter=lfs diff=lfs merge=lfs -text
+*.fbx   filter=lfs diff=lfs merge=lfs -text
+scans/**/*.stl filter=lfs diff=lfs merge=lfs -text
+print/pigeon-bigtail/*.stl filter=lfs diff=lfs merge=lfs -text
+print/vr-gopro-holder/*.stl filter=lfs diff=lfs merge=lfs -text
+print/stereophone/*.stl filter=lfs diff=lfs merge=lfs -text
+print/leshka-mount/*.stl filter=lfs diff=lfs merge=lfs -text
+print/bike-mount/*.stl filter=lfs diff=lfs merge=lfs -text
+print/basket-fix/*.stl filter=lfs diff=lfs merge=lfs -text
+print/camera-holder/*.stl filter=lfs diff=lfs merge=lfs -text
