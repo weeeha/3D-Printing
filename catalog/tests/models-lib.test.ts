@@ -6,7 +6,6 @@ import {
 } from "@/lib/models";
 import { costCad, priceFor } from "@/lib/prices";
 import { calibrate, estimate } from "@/lib/estimate";
-import { bambuStudioLink } from "@/lib/bambu";
 
 const SPOOLS = rawSpools as Spool[];
 const byId = (id: string) => MODELS.models.find((m) => m.id === id) as ModelRecord;
@@ -74,11 +73,5 @@ describe("estimate for a dropped file", () => {
 
   it("refuses to calibrate on fewer than two slices", () => {
     expect(calibrate(MODELS.models.filter((m) => m.id === "smallclock-shell"))).toBeNull();
-  });
-});
-
-describe("bambuStudioLink", () => {
-  it("hands Bambu Studio the encoded file URL", () => {
-    expect(bambuStudioLink("https://x.dev/models/a b.3mf")).toBe("bambustudioopen://https%3A%2F%2Fx.dev%2Fmodels%2Fa%20b.3mf");
   });
 });

@@ -10,6 +10,7 @@ import {
 import { Filters, EMPTY_FILTERS, type FilterState } from "@/components/Filters";
 import { RackView, type Section } from "@/components/RackView";
 import { GridView } from "@/components/GridView";
+import { SiteNav } from "@/components/SiteNav";
 import { sortSpools, groupByColour, type SortKey } from "@/lib/colour-sort";
 
 const SPOOLS = rawSpools as Spool[];
@@ -91,6 +92,7 @@ export default function Home() {
 
   return (
     <main className="mx-auto max-w-[1100px] px-4 py-8 sm:px-8 sm:py-12 flex flex-col gap-8">
+      <SiteNav current="shelf" />
       <header className="flex flex-col gap-4">
         <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--muted)]">
           Bambu Lab and Amazon · Dec 2022 to Dec 2025

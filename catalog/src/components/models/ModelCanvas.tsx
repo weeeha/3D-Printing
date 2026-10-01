@@ -47,7 +47,9 @@ class LoadBoundary extends Component<{ onError: (m: string) => void; children: R
     return { failed: true };
   }
   componentDidCatch(error: unknown) {
-    this.props.onError(error instanceof Error ? error.message : String(error));
+    // useLoader prefixes "Could not load <url>: "; the URL is a blob or our own path, so keep the reason only.
+    const reason = (error instanceof Error ? error.message : String(error)).replace(/^Could not load \S+: /, "");
+    this.props.onError(`The file could not be read (${reason}).`);
   }
   render() {
     return this.state.failed ? null : this.props.children;
@@ -78,7 +80,7 @@ export default function ModelCanvas(props: CanvasProps) {
       <Plate offset={props.plateOffset} colours={tokens} />
       <LoadBoundary key={props.url} onError={props.onError}>
         <Suspense fallback={null}>
-          <Bounds fit clip observe margin={1.25}>
+          <Bounds fit clip observe margin={1.6}>
             <Model
               url={props.url}
               format={props.format}

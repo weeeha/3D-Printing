@@ -9,8 +9,8 @@ Draft: https://claude.ai/artifact/HRuRfdx7CwV381NPmd89TQ
 A `/models` page in the `catalog/` site that shows every print-ready file in
 `print/` in a 3D viewer, with what it takes to print it on the P1S: print
 time, filament per colour, cost at the prices actually paid, size and bed
-fit, and the slicer settings the numbers came from. A button opens the file
-in Bambu Studio.
+fit, and the slicer settings the numbers came from. A download hands the
+file to Bambu Studio.
 
 The viewer is the one from `3d-models-playground` (`../3D Models`), copied
 and narrowed to print formats. The filament shelf stays at `/`.
@@ -23,13 +23,13 @@ In scope:
 - Geometry, Surface and Realistic view modes plus Wireframe, on a 256 mm P1S
   plate drawn where the slicer placed the parts.
 - A print panel: time, filament and cost, size and bed fit, settings used,
-  "Open in Bambu Studio", "Download .3mf".
+  "Download .3mf".
 - Dropping an STL or 3MF from disk for a rough estimate (a range).
 - A two-link site nav, Filament Shelf and Models, on both pages.
 
 Not in scope:
 
-- Sending jobs to the printer. "Open in Bambu Studio" stops at opening.
+- Sending jobs to the printer. The download stops at opening the file.
 - The Realistic room, lighting presets and SuperClock screen faces from the
   playground viewer. Realistic here is plastic on the plate.
 - Per-object colours in Realistic for multi-colour files.
@@ -186,20 +186,23 @@ own states below.
   clearance to the nearest edge or "No clearance".
 - Sliced with: printer, process, layer, infill, walls, supports. For
   defaults, a sentence that the real print may use other settings.
-- Actions: "Open in Bambu Studio" and "Download .3mf".
+- Action: "Download .3mf".
 
-### Open in Bambu Studio
+### Open in Bambu Studio (dropped during build)
 
-Bambu Studio 2.07 on macOS registers `bambustudioopen://`. The button links
-to `bambustudioopen://` + the URL-encoded absolute URL of
-`/models/<id>.3mf`. Bambu Studio downloads that URL itself, so it works only
-where the page is reachable without a login: the local dev server, or a
-deployment without Vercel Authentication. The catalog project currently
-protects every deployment including production
-(`ssoProtection: all_except_custom_domains`), so on Vercel the button cannot
-work until that changes. "Download .3mf" always works, since the browser
-carries the login. Changing protection is Nick's decision, not part of this
-build.
+Bambu Studio 2.07 on macOS registers `bambustudioopen://`. Tested on
+2026-10-01 against a local server that logged every request, three link
+forms (`bambustudioopen://<encoded url>`, `bambustudioopen://open?file=...`,
+and the raw URL) all launched Bambu Studio, and none made it request the
+file. It likely accepts only MakerWorld links or a logged-in Bambu account;
+its logs are encrypted, so which one is unconfirmed.
+
+So the panel's action is "Download .3mf". Bambu Studio registers `.3mf`, so
+opening the download from the browser opens it there. The download also
+works behind Vercel Authentication, which protects every deployment of the
+catalog project including production
+(`ssoProtection: all_except_custom_domains`); a link Bambu Studio fetches
+itself could not have passed that anyway.
 
 ## Testing
 
