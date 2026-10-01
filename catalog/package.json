@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "data": "node scripts/build-spools.mjs"
+    "data": "node scripts/build-spools.mjs",
+    "slice": "node scripts/slice-models.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
