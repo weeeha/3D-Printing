@@ -37,7 +37,8 @@ if (!existsSync(BIN)) {
 }
 
 const tmp = mkdtempSync(join(tmpdir(), "slice-models-"));
-const run = (args, opts = {}) => execFileSync(BIN, args, { stdio: ["ignore", "pipe", "ignore"], ...opts }).toString();
+// cwd is the temp dir: --info drops a result.json wherever it runs.
+const run = (args) => execFileSync(BIN, args, { cwd: tmp, stdio: ["ignore", "pipe", "ignore"] }).toString();
 const unzipText = (file, entry) => {
   try { return execFileSync("unzip", ["-p", file, entry], { maxBuffer: 1 << 28 }).toString(); }
   catch { return ""; }

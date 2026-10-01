@@ -145,7 +145,7 @@
       "settingsSource": "defaults",
       "slice": {
         "status": "sliced",
-        "seconds": 2826,
+        "seconds": 2836,
         "filaments": [
           {
             "slot": 1,
@@ -195,14 +195,14 @@
       "settingsSource": "defaults",
       "slice": {
         "status": "sliced",
-        "seconds": 3474,
+        "seconds": 3521,
         "filaments": [
           {
             "slot": 1,
             "type": "PLA",
             "line": "PLA Basic",
             "hex": null,
-            "grams": 33.1
+            "grams": 33
           }
         ],
         "plate": [
