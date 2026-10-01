@@ -1,0 +1,226 @@
+# Models viewer — design
+
+Date: 2026-10-01
+Status: approved (draft reviewed, "build"), ready for implementation planning
+Draft: https://claude.ai/artifact/HRuRfdx7CwV381NPmd89TQ
+
+## Purpose
+
+A `/models` page in the `catalog/` site that shows every print-ready file in
+`print/` in a 3D viewer, with what it takes to print it on the P1S: print
+time, filament per colour, cost at the prices actually paid, size and bed
+fit, and the slicer settings the numbers came from. A button opens the file
+in Bambu Studio.
+
+The viewer is the one from `3d-models-playground` (`../3D Models`), copied
+and narrowed to print formats. The filament shelf stays at `/`.
+
+## Scope
+
+In scope:
+
+- The 12 `.3mf` files under `print/`. STL copies are not listed.
+- Geometry, Surface and Realistic view modes plus Wireframe, on a 256 mm P1S
+  plate drawn where the slicer placed the parts.
+- A print panel: time, filament and cost, size and bed fit, settings used,
+  "Open in Bambu Studio", "Download .3mf".
+- Dropping an STL or 3MF from disk for a rough estimate (a range).
+- A two-link site nav, Filament Shelf and Models, on both pages.
+
+Not in scope:
+
+- Sending jobs to the printer. "Open in Bambu Studio" stops at opening.
+- The Realistic room, lighting presets and SuperClock screen faces from the
+  playground viewer. Realistic here is plastic on the plate.
+- Per-object colours in Realistic for multi-colour files.
+- Fixing the sign files (see Known issues).
+
+## Data
+
+### Source of truth
+
+`print/**/*.3mf` stay the deliverables and are never written by the app.
+Prices come from `catalog/src/data/spools.json`, already built from the
+order ledgers.
+
+### Slicing step (Mac only)
+
+`catalog/scripts/slice-models.mjs`, run as `npm run slice`. It needs Bambu
+Studio at `/Applications/BambuStudio.app` and is never run on Vercel.
+
+For each `print/**/*.3mf`:
+
+1. **Settings.** A file with `Metadata/project_settings.config` is a Bambu
+   Studio project and slices with its own settings. Any other file is a bare
+   mesh and slices with the P1S defaults: `Bambu Lab P1S 0.4 nozzle`,
+   `0.20mm Standard @BBL X1C`, `Bambu PLA Basic @BBL X1C`.
+2. **Flatten the default profiles.** Bambu's system profiles inherit through
+   a chain (`PLA Basic @BBL X1C` → `@base` → `fdm_filament_pla` → ...). The
+   CLI does not follow `inherits`, so unflattened profiles silently fall back
+   to built-in values (20% infill instead of 15%, density 0, so 0 g). The
+   script merges each chain, parent first, into one JSON before slicing.
+3. **Place bare meshes on the bed.** Bare meshes come from CadQuery and
+   FreeCAD in their own coordinates. Auto-arrange splits multi-part signs
+   apart, and no arrange leaves origin-centred parts off the bed. The script
+   copies the file, moves every build item by one shared offset so the union
+   is centred on (128, 128) with its lowest point at Z = 0, and slices with
+   `--arrange 0`.
+4. **Slice** with `--slice 0 --export-3mf`, then read from the output:
+   `Metadata/slice_info.config` (time, per-filament type, colour, grams),
+   `Metadata/plate_1.json` (each object's footprint on the bed, including the
+   prime tower), `Metadata/project_settings.config` (settings used).
+5. **Measure** with `--info`: overall size, parts, triangles, volume.
+
+Output, both committed (Vercel builds from `catalog/` alone, the same rule as
+`spools.json`):
+
+- `catalog/src/data/models.json`: one record per file, below.
+- `catalog/public/models/<id>.3mf`: a copy of each file. These go through Git
+  LFS by the existing `*.3mf` rule; LFS stores by content hash, so the copy
+  adds no LFS storage.
+
+A slice that fails is recorded, not dropped, with a reason a person can act
+on. A part at or over 255.9 mm on X or Y gets "fills the bed"; anything else
+carries Bambu Studio's own message.
+
+### Record
+
+```ts
+type ModelRecord = {
+  id: string;              // slug of the file name, used in /models#<id>
+  name: string;            // file name without .3mf
+  folder: string;          // print/<folder>
+  file: string;            // repo path
+  sha256: string;          // of the print/ file, for the freshness test
+  parts: number;
+  triangles: number;
+  volumeCm3: number;
+  size: [number, number, number];  // mm, X × Y × Z
+  settingsSource: "file" | "defaults";
+  slice:
+    | { status: "sliced"; seconds: number; filaments: Filament[];
+        plate: PlateObject[]; settings: SliceSettings }
+    | { status: "failed"; reason: string; slicerMessage: string };
+};
+type Filament = { slot: number; type: string; line: string;
+                  hex: string | null; grams: number };
+type PlateObject = { name: string; box: [number, number, number, number];
+                     tower: boolean };   // bed mm, x0 y0 x1 y1
+```
+
+`line` is the Bambu product line taken from the slot's filament preset
+("PLA Matte", "PLA Basic"). `hex` is null for bare meshes, which carry no
+colour.
+
+### Freshness
+
+`tests/models-freshness.test.ts`: every `print/**/*.3mf` has a record, every
+record's `sha256` matches its file, and every `public/models/<id>.3mf` is a
+byte copy. Edit a print file without running `npm run slice` and it fails.
+
+## Cost
+
+Price per kg is the median of `pricePaidCad / weightKg` over priced spools of
+the same product line. With no priced spool of that line, the median of the
+same material. Amazon spools have no recorded price and never count. Today:
+PLA Basic CAD 25.99 (8 spools), PLA Matte 12.99 (19). The panel names the
+line, the price and how many orders it came from.
+
+## Estimate for dropped files
+
+The viewer measures the mesh volume (signed tetrahedra) and size. Grams and
+minutes are shown as a range, calibrated at runtime on this repo's own
+records: sliced, single filament, 0.4 mm nozzle, 0.20 mm layers. Grams =
+volume × the lowest and highest g/cm³ seen; minutes = grams × the lowest and
+highest min/g seen. Fewer than two calibration records: show volume and size
+only. The panel says it is an estimate and to slice for a real number.
+
+## Page
+
+`catalog/src/app/models/page.tsx` (server component, metadata) renders
+`ModelsWorkbench` (client). The 3D canvas loads with `next/dynamic`,
+`ssr: false`, so the static export never renders three.js on the server.
+
+Layout follows the approved draft and the shelf's system: tokens from
+`globals.css`, system monospace, hairline rules, square corners.
+
+- ≥1140 px: list 236 px | viewer | panel 300 px.
+- 760–1139 px: viewer | panel, list under the viewer.
+- Narrower: viewer, panel, list.
+
+Selection lives in the hash, `/models#smallclock-shell`, so a model can be
+linked. Default: the first sliced record.
+
+### Viewer
+
+Copied from the playground: `Model.tsx` (per-mesh flat, creased-smooth and
+edge variants, Z-up grounding), the mode switch as a keyboard radiogroup, and
+the Wireframe toggle. Changes:
+
+- **3MF reader.** three's bundled `ThreeMFLoader` cannot open Bambu Studio
+  projects: they keep each part in `3D/Objects/object_N.model` and reference
+  it with `p:path`, which it does not follow. `src/lib/read3mf.ts` unzips with
+  fflate and parses with regular expressions into plain meshes and matrices,
+  following components across files. It has no DOM dependency, so it is unit
+  tested in Node. A three `Loader` wraps it for `useLoader`.
+- **Plate, not grid.** A 256 mm plate with a 32 mm grid and the 18 × 28 mm
+  front-left no-go corner from the P1S profile (`bed_exclude_area`). For a
+  sliced record the plate is offset so the parts sit where `plate_1.json`
+  puts them.
+- **Realistic** is a plastic material in the file's colour when there is
+  exactly one filament with a colour, otherwise neutral, with soft shadows on
+  the plate.
+
+States: loading, loaded, couldn't load (with the reason), and the panel's
+own states below.
+
+### Print panel
+
+- Head: file name, path, part count, a chip: "Settings from the file", "P1S
+  defaults", "Not sliced", or "Estimate".
+- Print time, large.
+- Filament and cost (CAD): swatch, line, grams, cost per slot, total, and
+  one price line per product line.
+- Size and bed fit: size (a multi-part plate shows its footprint and
+  height), a bed diagram with parts, prime tower and no-go corner, and the
+  clearance to the nearest edge or "No clearance".
+- Sliced with: printer, process, layer, infill, walls, supports. For
+  defaults, a sentence that the real print may use other settings.
+- Actions: "Open in Bambu Studio" and "Download .3mf".
+
+### Open in Bambu Studio
+
+Bambu Studio 2.07 on macOS registers `bambustudioopen://`. The button links
+to `bambustudioopen://` + the URL-encoded absolute URL of
+`/models/<id>.3mf`. Bambu Studio downloads that URL itself, so it works only
+where the page is reachable without a login: the local dev server, or a
+deployment without Vercel Authentication. The catalog project currently
+protects every deployment including production
+(`ssoProtection: all_except_custom_domains`), so on Vercel the button cannot
+work until that changes. "Download .3mf" always works, since the browser
+carries the login. Changing protection is Nick's decision, not part of this
+build.
+
+## Testing
+
+Vitest, Node environment, as now:
+
+- `read3mf`: a single-mesh 3MF and a components-across-files 3MF built in the
+  test with fflate; transforms applied; a missing root model throws.
+- Slice parsing: `slice_info.config`, `plate_1.json` and profile-chain
+  flattening against fixture text and a fake profile directory.
+- Bed placement offset from `--info` output.
+- Prices, cost, duration format, bed clearance, estimate range.
+- Freshness, as above.
+
+Manual: `npm run build` (static export), then the page in Chrome and Safari
+at desktop and 375 px, light and dark, every file family, a dropped STL, and
+the Bambu Studio link against the dev server.
+
+## Known issues found while designing
+
+- The six sign files are exactly 256.0 mm wide, the full bed width, and
+  Bambu Studio refuses to slice them. Scaled to 255.5 mm they slice.
+- The README says `print/` files have AMS slots assigned. Only the three
+  toolkit files do; signs and smallclock are bare meshes.
+- The playground viewer has the same `ThreeMFLoader` limitation.
