@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ModelsWorkbench } from "@/components/models/ModelsWorkbench";
+import { ModelsPage as ModelsView } from "@/components/models/ModelsPage";
 
 export const metadata: Metadata = {
   title: "Models",
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ModelsPage() {
-  return <ModelsWorkbench />;
+  return <ModelsView />;
 }

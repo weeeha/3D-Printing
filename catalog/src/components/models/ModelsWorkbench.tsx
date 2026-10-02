@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SiteNav } from "@/components/SiteNav";
 import { DropZone } from "./DropZone";
 import { ModelList } from "./ModelList";
 import { PrintPanel, type Dropped } from "./PrintPanel";
@@ -14,32 +13,16 @@ import type { ViewMode } from "@/lib/view-modes";
 // three.js only runs in the browser; the static export never renders it.
 const ModelCanvas = dynamic(() => import("./ModelCanvas"), { ssr: false });
 
-const DEFAULT_ID = MODELS.models.find((m) => m.slice.status === "sliced")?.id ?? MODELS.models[0]?.id ?? null;
-const idFromHash = () => {
-  const id = window.location.hash.slice(1);
-  return MODELS.models.some((m) => m.id === id) ? id : null;
-};
 
 type LocalFile = { name: string; bytes: number; url: string; format: PrintFormat };
 type ViewState = { status: "loading" } | { status: "ready"; measure: Measure } | { status: "error"; message: string };
 
-export function ModelsWorkbench() {
-  const [selected, setSelected] = useState<string | null>(DEFAULT_ID);
+/** The viewer: file list, 3D canvas and print panel. ModelsPage owns which model is selected. */
+export function ModelsWorkbench({ selected, onSelect }: { selected: string | null; onSelect: (id: string) => void }) {
   const [local, setLocal] = useState<LocalFile | null>(null);
   const [mode, setMode] = useState<ViewMode>("geometry");
   const [wireframe, setWireframe] = useState(false);
   const [view, setView] = useState<ViewState>({ status: "loading" });
-
-  // The hash names the model, so a model can be linked: /models#smallclock-shell.
-  useEffect(() => {
-    const sync = () => {
-      const id = idFromHash();
-      if (id) { setLocal(null); setSelected(id); }
-    };
-    sync();
-    window.addEventListener("hashchange", sync);
-    return () => window.removeEventListener("hashchange", sync);
-  }, []);
 
   const record = useMemo(() => MODELS.models.find((m) => m.id === selected) ?? null, [selected]);
   const source = local
@@ -51,8 +34,7 @@ export function ModelsWorkbench() {
 
   const select = (id: string) => {
     setLocal(null);
-    setSelected(id);
-    try { history.replaceState(null, "", `#${id}`); } catch {}
+    onSelect(id);
   };
   const onMeasure = useCallback((measure: Measure) => setView({ status: "ready", measure }), []);
   const onError = useCallback((message: string) => setView({ status: "error", message }), []);
@@ -76,20 +58,6 @@ export function ModelsWorkbench() {
   const fileName = local ? local.name : record ? `${record.name}.3mf` : "";
 
   return (
-    <main className="mx-auto max-w-[1320px] px-4 py-8 sm:px-8 sm:py-12 flex flex-col gap-8">
-      <SiteNav current="models" />
-      <header className="flex flex-col gap-4">
-        <p className="text-[11px] uppercase tracking-[0.16em] text-[var(--muted)]">
-          print/ · {MODELS.models.length} files · sliced {MODELS.slicedAt} with {MODELS.slicer}
-        </p>
-        <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">Models</h1>
-        <p className="max-w-[62ch] text-sm leading-relaxed text-[var(--muted)]">
-          Every print-ready file in <code className="text-[var(--accent)]">print/</code>, sliced for the P1S.
-          Print time and filament come from Bambu Studio. Cost is the filament weight times what you paid
-          per kilo for that line.
-        </p>
-      </header>
-
       <div className="grid gap-5 items-start grid-cols-1 [grid-template-areas:'viewer''panel''files']
                       min-[760px]:grid-cols-[minmax(0,1fr)_300px] min-[760px]:[grid-template-areas:'viewer_panel''files_panel']
                       min-[1140px]:grid-cols-[236px_minmax(0,1fr)_300px] min-[1140px]:[grid-template-areas:'files_viewer_panel']">
@@ -134,6 +102,5 @@ export function ModelsWorkbench() {
           <PrintPanel record={local ? null : record} dropped={dropped} />
         </div>
       </div>
-    </main>
   );
 }

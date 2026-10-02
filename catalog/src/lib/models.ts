@@ -35,6 +35,8 @@ export type ModelRecord = {
   volumeCm3: number;
   size: [number, number, number];
   settingsSource: "file" | "defaults";
+  /** Bambu Studio's plate render is at /models/<id>.png. */
+  thumbnail: boolean;
   slice: Sliced | Failed;
 };
 
