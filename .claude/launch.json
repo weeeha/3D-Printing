@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "catalog",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "catalog", "run", "dev", "--", "--port", "3107"],
+      "port": 3107
+    }
+  ]
+}

@@ -8,6 +8,11 @@
   --rule: #d8dbd5;
   --rail: #242825;
   --accent: #1f5c48;
+  /* Models page: a refused slice, the 3D viewport and the P1S plate. */
+  --warn: #94570a;
+  --viewport: #e7e9e4;
+  --bed: #d3d7cf;
+  --bed-line: #b9beb5;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -18,6 +23,10 @@
     --rule: #2c312d;
     --rail: #0c0e0d;
     --accent: #5fbf9f;
+    --warn: #e3a24c;
+    --viewport: #0e110f;
+    --bed: #232824;
+    --bed-line: #343a35;
   }
 }
 body {

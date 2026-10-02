@@ -1,0 +1,610 @@
+{
+  "slicedAt": "2026-10-02",
+  "slicer": "Bambu Studio 02.07.01.62",
+  "models": [
+    {
+      "id": "csign-airgap",
+      "name": "csign_airgap",
+      "folder": "signs",
+      "file": "print/signs/csign_airgap.3mf",
+      "sha256": "aa40cb6bcff064632c43b8a5cf55db1af2931457b11724279f1ebb1fd6886cba",
+      "parts": 4,
+      "triangles": 73640,
+      "volumeCm3": 204.42,
+      "size": [
+        256,
+        200,
+        4
+      ],
+      "settingsSource": "defaults",
+      "thumbnail": true,
+      "slice": {
+        "status": "failed",
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
+      }
+    },
+    {
+      "id": "csign-bilingual",
+      "name": "csign_bilingual",
+      "folder": "signs",
+      "file": "print/signs/csign_bilingual.3mf",
+      "sha256": "8354cc0726fafd9bf5f93eb01eff2582136f24f0abf8e0ade61e176bc95b6731",
+      "parts": 3,
+      "triangles": 106056,
+      "volumeCm3": 204.42,
+      "size": [
+        256,
+        200,
+        4
+      ],
+      "settingsSource": "defaults",
+      "thumbnail": true,
+      "slice": {
+        "status": "failed",
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
+      }
+    },
+    {
+      "id": "csign-clankers",
+      "name": "csign_clankers",
+      "folder": "signs",
+      "file": "print/signs/csign_clankers.3mf",
+      "sha256": "5a7229cfc4c8573b0b9c54704b96638b16fc160b4ed6df7935340f2f9d33e9b1",
+      "parts": 4,
+      "triangles": 79400,
+      "volumeCm3": 204.42,
+      "size": [
+        256,
+        200,
+        4
+      ],
+      "settingsSource": "defaults",
+      "thumbnail": true,
+      "slice": {
+        "status": "failed",
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
+      }
+    },
+    {
+      "id": "sign-airgap",
+      "name": "sign_airgap",
+      "folder": "signs",
+      "file": "print/signs/sign_airgap.3mf",
+      "sha256": "81b21beecafc218984c780f43d075f1660a71c73db5c67c26e23125ba7a8bebe",
+      "parts": 2,
+      "triangles": 78484,
+      "volumeCm3": 204.42,
+      "size": [
+        256,
+        200,
+        4
+      ],
+      "settingsSource": "defaults",
+      "thumbnail": true,
+      "slice": {
+        "status": "failed",
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
+      }
+    },
+    {
+      "id": "sign-bilingual",
+      "name": "sign_bilingual",
+      "folder": "signs",
+      "file": "print/signs/sign_bilingual.3mf",
+      "sha256": "6fbc2da5b73f27671af7b3459bfe897e5ed26e890b9324030bb8f7b3b9647105",
+      "parts": 2,
+      "triangles": 88392,
+      "volumeCm3": 204.42,
+      "size": [
+        256,
+        200,
+        4
+      ],
+      "settingsSource": "defaults",
+      "thumbnail": true,
+      "slice": {
+        "status": "failed",
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
+      }
+    },
+    {
+      "id": "sign-clankers",
+      "name": "sign_clankers",
+      "folder": "signs",
+      "file": "print/signs/sign_clankers.3mf",
+      "sha256": "77ad9d53d954a99631843973c9f6252c44099ffee925c69189768ad42a8b1b02",
+      "parts": 2,
+      "triangles": 84032,
+      "volumeCm3": 204.42,
+      "size": [
+        256,
+        200,
+        4
+      ],
+      "settingsSource": "defaults",
+      "thumbnail": true,
+      "slice": {
+        "status": "failed",
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
+      }
+    },
+    {
+      "id": "smallclock-cradle",
+      "name": "smallclock_cradle",
+      "folder": "smallclock",
+      "file": "print/smallclock/smallclock_cradle.3mf",
+      "sha256": "bfddc93874b619c8be6dcd25e833a1c47e2a75a455f56e9f2be9189ff02f48f0",
+      "parts": 1,
+      "triangles": 10094,
+      "volumeCm3": 80.87,
+      "size": [
+        100,
+        75.4,
+        23
+      ],
+      "settingsSource": "defaults",
+      "thumbnail": true,
+      "slice": {
+        "status": "sliced",
+        "seconds": 2817,
+        "filaments": [
+          {
+            "slot": 1,
+            "type": "PLA",
+            "line": "PLA Basic",
+            "hex": null,
+            "grams": 35.1
+          }
+        ],
+        "plate": [
+          {
+            "name": "CadQuery Component",
+            "box": [
+              78.5,
+              90.8,
+              177.5,
+              165.2
+            ],
+            "tower": false
+          }
+        ],
+        "settings": {
+          "printer": "Bambu Lab P1S 0.4 nozzle",
+          "process": "0.20mm Standard @BBL X1C",
+          "layer": 0.2,
+          "infill": "15%",
+          "walls": 2,
+          "supports": false,
+          "nozzle": 0.4
+        }
+      }
+    },
+    {
+      "id": "smallclock-lid",
+      "name": "smallclock_lid",
+      "folder": "smallclock",
+      "file": "print/smallclock/smallclock_lid.3mf",
+      "sha256": "9243a459c45f00c4b4324359798d9ecbbac9e5dfde6146d7b0d9912619be3040",
+      "parts": 1,
+      "triangles": 12436,
+      "volumeCm3": 36.5,
+      "size": [
+        120.6,
+        120.6,
+        37.5
+      ],
+      "settingsSource": "defaults",
+      "thumbnail": true,
+      "slice": {
+        "status": "sliced",
+        "seconds": 3474,
+        "filaments": [
+          {
+            "slot": 1,
+            "type": "PLA",
+            "line": "PLA Basic",
+            "hex": null,
+            "grams": 33.1
+          }
+        ],
+        "plate": [
+          {
+            "name": "CadQuery Component",
+            "box": [
+              68.6,
+              68.6,
+              187.4,
+              187.4
+            ],
+            "tower": false
+          }
+        ],
+        "settings": {
+          "printer": "Bambu Lab P1S 0.4 nozzle",
+          "process": "0.20mm Standard @BBL X1C",
+          "layer": 0.2,
+          "infill": "15%",
+          "walls": 2,
+          "supports": false,
+          "nozzle": 0.4
+        }
+      }
+    },
+    {
+      "id": "smallclock-shell",
+      "name": "smallclock_shell",
+      "folder": "smallclock",
+      "file": "print/smallclock/smallclock_shell.3mf",
+      "sha256": "3168f0184348c1e1c17799472f9e9df46f8e87e1a35537bf49d802ca5cc69d8c",
+      "parts": 1,
+      "triangles": 10662,
+      "volumeCm3": 38.75,
+      "size": [
+        120.6,
+        120.6,
+        41.9
+      ],
+      "settingsSource": "defaults",
+      "thumbnail": true,
+      "slice": {
+        "status": "sliced",
+        "seconds": 2945,
+        "filaments": [
+          {
+            "slot": 1,
+            "type": "PLA",
+            "line": "PLA Basic",
+            "hex": null,
+            "grams": 40.3
+          }
+        ],
+        "plate": [
+          {
+            "name": "CadQuery Component",
+            "box": [
+              68.6,
+              68.6,
+              187.4,
+              187.4
+            ],
+            "tower": false
+          }
+        ],
+        "settings": {
+          "printer": "Bambu Lab P1S 0.4 nozzle",
+          "process": "0.20mm Standard @BBL X1C",
+          "layer": 0.2,
+          "infill": "15%",
+          "walls": 2,
+          "supports": false,
+          "nozzle": 0.4
+        }
+      }
+    },
+    {
+      "id": "kit-9cubes-2part",
+      "name": "KIT-9cubes_2part",
+      "folder": "toolkit",
+      "file": "print/toolkit/KIT-9cubes_2part.3mf",
+      "sha256": "d846ebb91aa3172c2b18c987448e3326c757d42e30493567932d64abde7f3f50",
+      "parts": 1,
+      "triangles": 25620,
+      "volumeCm3": 21.6,
+      "size": [
+        28,
+        28,
+        28
+      ],
+      "settingsSource": "file",
+      "thumbnail": true,
+      "slice": {
+        "status": "sliced",
+        "seconds": 13211,
+        "filaments": [
+          {
+            "slot": 1,
+            "type": "PLA",
+            "line": "PLA Matte",
+            "hex": "#FFFFFF",
+            "grams": 40.7
+          },
+          {
+            "slot": 2,
+            "type": "PLA",
+            "line": "PLA Basic",
+            "hex": "#EC008C",
+            "grams": 32
+          }
+        ],
+        "plate": [
+          {
+            "name": "body_twist",
+            "box": [
+              115.5,
+              115.5,
+              140.5,
+              140.5
+            ],
+            "tower": false
+          },
+          {
+            "name": "wipe_tower",
+            "box": [
+              161.8,
+              213.8,
+              200.7,
+              251.8
+            ],
+            "tower": true
+          }
+        ],
+        "settings": {
+          "printer": "Bambu Lab P1S 0.4 nozzle",
+          "process": "0.20mm Standard @BBL X1C",
+          "layer": 0.2,
+          "infill": "15%",
+          "walls": 2,
+          "supports": false,
+          "nozzle": 0.4
+        }
+      }
+    },
+    {
+      "id": "kit-9cubes-parts",
+      "name": "KIT-9cubes_PARTS",
+      "folder": "toolkit",
+      "file": "print/toolkit/KIT-9cubes_PARTS.3mf",
+      "sha256": "5f0af2157961b9cbb625dd31f36e81133ffe92391963d392f94f48ad8353d39f",
+      "parts": 9,
+      "triangles": 192556,
+      "volumeCm3": 194.37,
+      "size": [
+        116,
+        116,
+        28
+      ],
+      "settingsSource": "file",
+      "thumbnail": true,
+      "slice": {
+        "status": "sliced",
+        "seconds": 23410,
+        "filaments": [
+          {
+            "slot": 1,
+            "type": "PLA",
+            "line": "PLA Matte",
+            "hex": "#FFFFFF",
+            "grams": 132.2
+          },
+          {
+            "slot": 2,
+            "type": "PLA",
+            "line": "PLA Basic",
+            "hex": "#EC008C",
+            "grams": 39.8
+          }
+        ],
+        "plate": [
+          {
+            "name": "Object_1",
+            "box": [
+              71.5,
+              71.5,
+              96.5,
+              96.5
+            ],
+            "tower": false
+          },
+          {
+            "name": "Object_2",
+            "box": [
+              115.5,
+              71.5,
+              140.5,
+              96.5
+            ],
+            "tower": false
+          },
+          {
+            "name": "Object_3",
+            "box": [
+              159.5,
+              71.5,
+              184.5,
+              96.5
+            ],
+            "tower": false
+          },
+          {
+            "name": "Object_4",
+            "box": [
+              71.5,
+              115.5,
+              96.5,
+              140.5
+            ],
+            "tower": false
+          },
+          {
+            "name": "Object_5",
+            "box": [
+              116.3,
+              116.1,
+              141.2,
+              141
+            ],
+            "tower": false
+          },
+          {
+            "name": "Object_6",
+            "box": [
+              159.5,
+              115.5,
+              184.5,
+              140.5
+            ],
+            "tower": false
+          },
+          {
+            "name": "Object_7",
+            "box": [
+              71.5,
+              159.5,
+              96.5,
+              184.5
+            ],
+            "tower": false
+          },
+          {
+            "name": "Object_8",
+            "box": [
+              115.5,
+              159.5,
+              140.5,
+              184.5
+            ],
+            "tower": false
+          },
+          {
+            "name": "Object_9",
+            "box": [
+              159.5,
+              159.5,
+              184.5,
+              184.5
+            ],
+            "tower": false
+          },
+          {
+            "name": "wipe_tower",
+            "box": [
+              161.8,
+              213.8,
+              192.7,
+              244.3
+            ],
+            "tower": true
+          }
+        ],
+        "settings": {
+          "printer": "Bambu Lab P1S 0.4 nozzle",
+          "process": "0.20mm Standard @BBL X1C",
+          "layer": 0.2,
+          "infill": "15%",
+          "walls": 2,
+          "supports": false,
+          "nozzle": 0.4
+        }
+      }
+    },
+    {
+      "id": "test-plate-tile-conflict",
+      "name": "TEST-PLATE_tile+conflict",
+      "folder": "toolkit",
+      "file": "print/toolkit/TEST-PLATE_tile+conflict.3mf",
+      "sha256": "b105a3599c26c529047f77b546499c64495e31fc944ee5721409add6bdb472e5",
+      "parts": 2,
+      "triangles": 31376,
+      "volumeCm3": 29.5,
+      "size": [
+        112.9,
+        46,
+        28
+      ],
+      "settingsSource": "file",
+      "thumbnail": true,
+      "slice": {
+        "status": "sliced",
+        "seconds": 11064,
+        "filaments": [
+          {
+            "slot": 1,
+            "type": "PLA",
+            "line": "PLA Basic",
+            "hex": "#FFFFFF",
+            "grams": 14.1
+          }
+        ],
+        "plate": [
+          {
+            "name": "Object_1",
+            "box": [
+              71.6,
+              108,
+              135.6,
+              152
+            ],
+            "tower": false
+          },
+          {
+            "name": "Object_2",
+            "box": [
+              158.2,
+              107.7,
+              182.8,
+              132.3
+            ],
+            "tower": false
+          }
+        ],
+        "settings": {
+          "printer": "Bambu Lab P1S 0.2 nozzle",
+          "process": "0.08mm High Quality @BBL X1C 0.2 nozzle",
+          "layer": 0.08,
+          "infill": "15%",
+          "walls": 4,
+          "supports": false,
+          "nozzle": 0.2
+        }
+      }
+    }
+  ]
+}
