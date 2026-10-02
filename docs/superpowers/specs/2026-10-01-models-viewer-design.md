@@ -138,18 +138,39 @@ only. The panel says it is an estimate and to slice for a real number.
 ## Page
 
 `catalog/src/app/models/page.tsx` (server component, metadata) renders
-`ModelsWorkbench` (client). The 3D canvas loads with `next/dynamic`,
-`ssr: false`, so the static export never renders three.js on the server.
+`ModelsPage` (client): header, a Gallery / List / Viewer switch styled like
+the shelf's Rack / Grid toggle, and the selected view. The 3D canvas loads
+with `next/dynamic`, `ssr: false`, so the static export never renders
+three.js on the server.
 
 Layout follows the approved draft and the shelf's system: tokens from
 `globals.css`, system monospace, hairline rules, square corners.
 
+The view lives in the hash: none or `#gallery` is the gallery, `#list` the
+list, `#<model id>` the viewer on that model. Opening a model from an
+overview is a history step, so Back returns to it; picking another model
+inside the viewer replaces the entry.
+
+### Gallery and list (added 2026-10-02)
+
+- **Gallery** (default): cards grouped by `print/` folder, each with Bambu
+  Studio's plate thumbnail (`public/models/<id>.png`, transparent, so it sits
+  on light and dark), name, time · grams · cost or "Not sliced · reason",
+  and size. Two columns on phones.
+- **List**: one row per file with print time, filament, cost, size, bed
+  clearance and settings source. Model, time, filament and cost sort; files
+  without a slice stay last either way. Unsorted, it follows the gallery's
+  folder order.
+
+Thumbnails come from `npm run slice`: `--export-png 0` renders the plate
+without slicing, so refused files get one too. Bare meshes render in the
+viewer's Geometry grey instead of Bambu's default green.
+
+### Viewer layout
+
 - ≥1140 px: list 236 px | viewer | panel 300 px.
 - 760–1139 px: viewer | panel, list under the viewer.
 - Narrower: viewer, panel, list.
-
-Selection lives in the hash, `/models#smallclock-shell`, so a model can be
-linked. Default: the first sliced record.
 
 ### Viewer
 
@@ -212,7 +233,7 @@ Vitest, Node environment, as now:
   test with fflate; transforms applied; a missing root model throws.
 - Slice parsing: `slice_info.config`, `plate_1.json` and profile-chain
   flattening against fixture text and a fake profile directory.
-- Bed placement offset from `--info` output.
+- Bed placement from real vertices (`boundsOf`), stepping clear of the no-go corner.
 - Prices, cost, duration format, bed clearance, estimate range.
 - Freshness, as above.
 
@@ -222,8 +243,19 @@ the Bambu Studio link against the dev server.
 
 ## Known issues found while designing
 
-- The six sign files are exactly 256.0 mm wide, the full bed width, and
-  Bambu Studio refuses to slice them. Scaled to 255.5 mm they slice.
+- **Bambu's `--info` centres every object on itself.** Its min/max say
+  nothing about where a file puts its parts, so placement and size come from
+  the vertices (`boundsOf` over `read3mf`), and `--info` only supplies
+  counts and volume.
+- **The six signs do not slice: G-code conflict.** Their text parts are
+  separate objects overlapping the sign body. Corrected on 2026-10-02: an
+  earlier note blamed the 256.0 mm width. The body alone, 256 mm wide,
+  slices (3h 34m, 141 g) once placed clear of the no-go corner; centred, it
+  touches that corner and Bambu reports an object conflict instead, which
+  is why placement now steps back from it.
 - The README says `print/` files have AMS slots assigned. Only the three
   toolkit files do; signs and smallclock are bare meshes.
-- The playground viewer has the same `ThreeMFLoader` limitation.
+- The playground viewer (`3d-models-playground`, three-stdlib 2.36.1
+  `ThreeMFLoader`) opens bare meshes but fails on Bambu Studio projects with
+  "Cannot read properties of undefined (reading 'mesh')". Confirmed
+  2026-10-02 in headless Chrome.
