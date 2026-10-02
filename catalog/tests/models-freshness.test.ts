@@ -32,11 +32,12 @@ describe("committed models.json", () => {
     }
   });
 
-  it("ships a byte copy of each file in public/models", () => {
+  it("ships a byte copy of each file, and its thumbnail, in public/models", () => {
     for (const m of committed.models) {
       expect(sha256(join(REPO, "catalog/public/models", `${m.id}.3mf`)), m.id).toBe(m.sha256);
     }
-    expect(readdirSync(join(REPO, "catalog/public/models")).sort())
-      .toEqual(committed.models.map((m) => `${m.id}.3mf`).sort());
+    expect(readdirSync(join(REPO, "catalog/public/models")).sort()).toEqual(
+      committed.models.flatMap((m) => [`${m.id}.3mf`, ...(m.thumbnail ? [`${m.id}.png`] : [])]).sort(),
+    );
   });
 });

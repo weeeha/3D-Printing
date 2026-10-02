@@ -6,7 +6,7 @@ import type { Measure } from "./Model";
 import { calibrate, estimate } from "@/lib/estimate";
 import {
   MODELS, centredBox, clearance, formatDuration, formatMm, totalGrams, unionBox,
-  type Box, type ModelRecord, type Sliced,
+  type Box, type Failed, type ModelRecord, type Sliced,
 } from "@/lib/models";
 import { filamentPrice, formatCad, sliceCost } from "@/lib/model-cost";
 import { costCad } from "@/lib/prices";
@@ -157,18 +157,18 @@ function SlicedPanel({ record, slice }: { record: ModelRecord; slice: Sliced }) 
   );
 }
 
-function FailedPanel({ record, reason }: { record: ModelRecord; reason: string }) {
+function FailedPanel({ record, slice }: { record: ModelRecord; slice: Failed }) {
   return (
     <>
       <Head title={`${record.name}.3mf`} path={`${record.file} · ${record.parts} parts`} chip={<Chip tone="warn">Not sliced</Chip>} />
       <Section label="Print time">
         <span className="text-2xl font-semibold tracking-tight text-[var(--warn)]">No estimate</span>
-        <Note>{reason}</Note>
+        <Note>{slice.reason}</Note>
       </Section>
       <Section label="Filament and cost (CAD)">
         <Note>Weight and cost appear once the file slices.</Note>
       </Section>
-      <SizeAndFit size={record.size} footprints={[{ box: centredBox(record.size), tower: false }]} tone="warn" />
+      <SizeAndFit size={record.size} footprints={[{ box: slice.footprint ?? centredBox(record.size), tower: false }]} tone="warn" />
       <Actions record={record} />
     </>
   );
@@ -224,7 +224,7 @@ export function PrintPanel({ record, dropped }: { record: ModelRecord | null; dr
     <aside aria-live="polite" className="border border-[var(--rule)] bg-[var(--surface)] min-w-0">
       {dropped ? <EstimatePanel dropped={dropped} />
         : record?.slice.status === "sliced" ? <SlicedPanel record={record} slice={record.slice} />
-        : record?.slice.status === "failed" ? <FailedPanel record={record} reason={record.slice.reason} />
+        : record?.slice.status === "failed" ? <FailedPanel record={record} slice={record.slice} />
         : null}
     </aside>
   );

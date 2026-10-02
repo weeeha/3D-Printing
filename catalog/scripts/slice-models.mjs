@@ -16,9 +16,11 @@ import { tmpdir } from "node:os";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  bedOffset, failureReason, flattenProfile, parseInfo, parsePlate, parseSettings, parseSliceInfo,
+  bedOffset, boundsOf, failureReason, flattenProfile, parseInfo, parsePlate, parseSettings, parseSliceInfo,
   placeItems, productLine, slug,
 } from "./slice-lib.mjs";
+// Node strips the types; the page uses the same reader, so placement measures what the viewer shows.
+import { read3mf } from "../src/lib/read3mf.ts";
 
 const CATALOG = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const REPO = resolve(CATALOG, "..");
@@ -30,6 +32,8 @@ const DEFAULTS = {
   process: "0.20mm Standard @BBL X1C",
   filament: "Bambu PLA Basic @BBL X1C",
 };
+/** Bare meshes carry no colour; render their thumbnails in the viewer's Geometry grey, not Bambu's default green. */
+const NEUTRAL = "#B9BCC1";
 
 if (!existsSync(BIN)) {
   console.error(`Bambu Studio not found at ${APP}. Install it, or run this on the Mac that has it.`);
@@ -50,7 +54,9 @@ function writeFlatDefaults() {
   const out = {};
   for (const [key, kind] of [["machine", "machine"], ["process", "process"], ["filament", "filament"]]) {
     out[key] = join(tmp, `${key}.json`);
-    writeFileSync(out[key], JSON.stringify(flattenProfile(kind, DEFAULTS[key], read)));
+    const flat = flattenProfile(kind, DEFAULTS[key], read);
+    if (key === "filament") Object.assign(flat, { filament_colour: [NEUTRAL], default_filament_colour: [NEUTRAL] });
+    writeFileSync(out[key], JSON.stringify(flat));
   }
   return out;
 }
@@ -62,12 +68,12 @@ function printFiles(dir = join(REPO, "print")) {
 }
 
 /** Copy a bare mesh with every build item moved onto the bed. */
-function placedCopy(file, info, work) {
+function placedCopy(file, offset, work) {
   const src = join(work, "src");
   mkdirSync(src, { recursive: true });
   execFileSync("unzip", ["-q", "-o", file, "-d", src]);
   const model = join(src, "3D/3dmodel.model");
-  writeFileSync(model, placeItems(readFileSync(model, "utf8"), bedOffset(info)));
+  writeFileSync(model, placeItems(readFileSync(model, "utf8"), offset));
   const placed = join(work, "placed.3mf");
   execFileSync("zip", ["-q", "-r", "-X", placed, "."], { cwd: src });
   return placed;
@@ -80,6 +86,7 @@ function sliceOne(file, defaults) {
   mkdirSync(work, { recursive: true });
   const fromFile = listZip(file).includes("Metadata/project_settings.config");
   const info = parseInfo(run(["--info", file]));
+  const bounds = boundsOf(read3mf(new Uint8Array(readFileSync(file))));
 
   const base = {
     id, name,
@@ -89,22 +96,38 @@ function sliceOne(file, defaults) {
     parts: info.objects,
     triangles: info.triangles,
     volumeCm3: info.volumeCm3,
-    size: info.size,
+    size: bounds.size,
     settingsSource: fromFile ? "file" : "defaults",
   };
 
-  const out = join(work, "out");
-  const args = ["--slice", "0", "--outputdir", out, "--export-3mf", "sliced.3mf"];
-  const input = fromFile ? file : placedCopy(file, info, work);
-  if (!fromFile) {
-    args.push("--arrange", "0", "--load-settings", `${defaults.machine};${defaults.process}`, "--load-filaments", defaults.filament);
-  }
+  // Bare meshes are moved onto the bed; record where, so a refused file still has a footprint.
+  const offset = bedOffset(bounds);
+  const input = fromFile ? file : placedCopy(file, offset, work);
+  const footprint = fromFile ? null
+    : [bounds.min[0] + offset[0], bounds.min[1] + offset[1], bounds.max[0] + offset[0], bounds.max[1] + offset[1]].map((v) => Math.round(v * 10) / 10);
+  const settingsArgs = fromFile ? [] : [
+    "--arrange", "0", "--load-settings", `${defaults.machine};${defaults.process}`, "--load-filaments", defaults.filament,
+  ];
+
+  // The plate thumbnail renders without slicing, so a file the slicer refuses still gets one.
+  const thumbDir = join(work, "thumb");
+  mkdirSync(thumbDir, { recursive: true }); // --export-png writes nothing into a missing folder
+  let thumb = null;
   try {
-    run([...args, input]);
+    run(["--export-png", "0", "--outputdir", thumbDir, ...settingsArgs, input]);
+    const png = readdirSync(thumbDir).find((f) => /^plate_1.*\.png$/.test(f));
+    if (png) thumb = join(thumbDir, png);
+  } catch {}
+  base.thumbnail = thumb !== null;
+
+  const out = join(work, "out");
+  mkdirSync(out, { recursive: true }); // result.json, with the slicer's own error, only lands in an existing folder
+  try {
+    run(["--slice", "0", "--outputdir", out, "--export-3mf", "sliced.3mf", ...settingsArgs, input]);
   } catch {
     const result = existsSync(join(out, "result.json")) ? JSON.parse(readFileSync(join(out, "result.json"), "utf8")) : {};
     const message = result.error_string ?? "no result was written";
-    return { ...base, slice: { status: "failed", reason: failureReason(info.size, message), slicerMessage: message } };
+    return { record: { ...base, slice: { status: "failed", ...failureReason(message), slicerMessage: message.trim(), footprint } }, thumb };
   }
 
   const sliced = join(out, "sliced.3mf");
@@ -115,19 +138,22 @@ function sliceOne(file, defaults) {
     throw new Error(`${name}: a filament came back with no weight. Check the profile flattening.`);
   }
   return {
-    ...base,
-    slice: {
-      status: "sliced",
-      seconds,
-      filaments: filaments.map((f) => ({
-        slot: f.slot,
-        type: f.type,
-        line: fromFile ? productLine(filamentPresets[f.slot - 1]) : productLine(DEFAULTS.filament),
-        hex: fromFile ? f.hex : null,
-        grams: Math.round(f.grams * 10) / 10,
-      })),
-      plate,
-      settings,
+    thumb,
+    record: {
+      ...base,
+      slice: {
+        status: "sliced",
+        seconds,
+        filaments: filaments.map((f) => ({
+          slot: f.slot,
+          type: f.type,
+          line: fromFile ? productLine(filamentPresets[f.slot - 1]) : productLine(DEFAULTS.filament),
+          hex: fromFile ? f.hex : null,
+          grams: Math.round(f.grams * 10) / 10,
+        })),
+        plate,
+        settings,
+      },
     },
   };
 }
@@ -135,18 +161,23 @@ function sliceOne(file, defaults) {
 try {
   const defaults = writeFlatDefaults();
   const version = execFileSync("plutil", ["-extract", "CFBundleShortVersionString", "raw", "-o", "-", `${APP}/Contents/Info.plist`]).toString().trim();
-  const models = printFiles().map((file) => {
-    const record = sliceOne(file, defaults);
-    const s = record.slice;
-    console.log(`${record.file.padEnd(48)} ${s.status === "sliced" ? `${Math.round(s.seconds / 60)} min` : "not sliced"}`);
-    return record;
+  const results = printFiles().map((file) => {
+    const result = sliceOne(file, defaults);
+    const s = result.record.slice;
+    console.log(`${result.record.file.padEnd(48)} ${s.status === "sliced" ? `${Math.round(s.seconds / 60)} min` : "not sliced"}${result.thumb ? "" : ", no thumbnail"}`);
+    return result;
   });
+  const models = results.map((r) => r.record);
 
+  // public/models/ holds each print file and its plate thumbnail, nothing else.
   const publicDir = join(CATALOG, "public/models");
   mkdirSync(publicDir, { recursive: true });
-  const keep = new Set(models.map((m) => `${m.id}.3mf`));
+  const keep = new Set(results.flatMap((r) => [`${r.record.id}.3mf`, ...(r.thumb ? [`${r.record.id}.png`] : [])]));
   for (const f of readdirSync(publicDir)) if (!keep.has(f)) unlinkSync(join(publicDir, f));
-  for (const m of models) copyFileSync(join(REPO, m.file), join(publicDir, `${m.id}.3mf`));
+  for (const { record, thumb } of results) {
+    copyFileSync(join(REPO, record.file), join(publicDir, `${record.id}.3mf`));
+    if (thumb) copyFileSync(thumb, join(publicDir, `${record.id}.png`));
+  }
 
   const data = { slicedAt: new Date().toISOString().slice(0, 10), slicer: `Bambu Studio ${version}`, models };
   writeFileSync(join(CATALOG, "src/data/models.json"), `${JSON.stringify(data, null, 2)}\n`);

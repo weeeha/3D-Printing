@@ -1,34 +1,35 @@
 import { describe, it, expect } from "vitest";
 import {
-  flattenProfile, parseInfo, bedOffset, placeItems, parseSliceInfo, parsePlate,
+  flattenProfile, parseInfo, boundsOf, bedOffset, placeItems, parseSliceInfo, parsePlate,
   parseSettings, productLine, failureReason, slug,
 } from "../scripts/slice-lib.mjs";
 
-// Trimmed from real Bambu Studio 02.07.01.62 output on the files in print/.
+// Real Bambu Studio 02.07.01.62 --info output for print/signs/sign_airgap.3mf. It centres every
+// object on itself, so its min/max say nothing about where the file actually puts the parts.
 const INFO_TWO_OBJECTS = `[sign_airgap.3mf]
 size_x = 256.000000
 size_y = 200.000000
 size_z = 4.000000
-min_x = 0.000000
-min_y = 0.000000
-min_z = 0.000000
-max_x = 256.000000
-max_y = 200.000000
-max_z = 4.000000
-number_of_facets = 70000
+min_x = -128.000000
+min_y = -100.000000
+min_z = -2.000000
+max_x = 128.000000
+max_y = 100.000000
+max_z = 2.000000
+number_of_facets = 39878
 manifold = yes
 number_of_parts =  1
 volume = 199960.781250
 size_x = 244.000000
 size_y = 188.000000
 size_z = 0.600000
-min_x = 6.000000
-min_y = 6.000000
-min_z = 0.000000
-max_x = 250.000000
-max_y = 194.000000
-max_z = 0.600000
-number_of_facets = 8484
+min_x = -122.000000
+min_y = -94.000000
+min_z = -0.300000
+max_x = 122.000000
+max_y = 94.000000
+max_z = 0.300000
+number_of_facets = 38606
 manifold = yes
 number_of_parts =  254
 volume = 4460.942383
@@ -71,19 +72,31 @@ describe("flattenProfile", () => {
 });
 
 describe("parseInfo", () => {
-  it("unions every object's box and sums the counts", () => {
-    const info = parseInfo(INFO_TWO_OBJECTS);
-    expect(info.size).toEqual([256, 200, 4]);
-    expect(info.min).toEqual([0, 0, 0]);
-    expect(info.max).toEqual([256, 200, 4]);
-    expect(info.objects).toBe(2);
-    expect(info.triangles).toBe(78484);
-    expect(info.volumeCm3).toBeCloseTo(204.42, 2);
+  it("counts objects and sums triangles and volume", () => {
+    expect(parseInfo(INFO_TWO_OBJECTS)).toEqual({ objects: 2, triangles: 78484, volumeCm3: 204.42 });
   });
 });
 
-describe("bedOffset", () => {
-  it("centres the model on the bed and drops it to Z=0", () => {
+describe("boundsOf and bedOffset", () => {
+  // A unit cube's two opposite corners; each part's matrix is column-major with translation at 12-14.
+  const corners = new Float32Array([0, 0, 0, 1, 1, 1]);
+  const at = (x: number, y: number, z: number) => [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
+  const sign = [{ positions: corners, matrix: at(0, 0, 0) }, { positions: corners, matrix: at(255, 199, 3) }];
+
+  it("measures where the file actually puts the parts", () => {
+    expect(boundsOf(sign)).toEqual({ min: [0, 0, 0], max: [256, 200, 4], size: [256, 200, 4] });
+  });
+
+  it("puts a file modelled at 0..256 on the bed, stepped back from the no-go corner", () => {
+    // Centred, this 200 mm-deep sign would sit at Y 28..228 and touch the 18 x 28 mm corner.
+    expect(bedOffset(boundsOf(sign))).toEqual([0, 33, 0]);
+  });
+
+  it("leaves a centred part alone when it is clear of the corner", () => {
+    expect(bedOffset({ min: [0, 0, 0], max: [100, 75, 23] })).toEqual([78, 90.5, 0]);
+  });
+
+  it("centres an origin-centred model and drops it to Z=0", () => {
     const offset = bedOffset({ min: [-60.3, -60.3, -20.95], max: [60.3, 60.3, 20.95] });
     expect(offset[0]).toBeCloseTo(128);
     expect(offset[1]).toBeCloseTo(128);
@@ -167,11 +180,19 @@ describe("productLine", () => {
 });
 
 describe("failureReason", () => {
-  it("explains a part that fills the bed", () => {
-    expect(failureReason([256, 200, 4], "One of the plate is empty")).toMatch(/256\.0 mm wide, the full width of the P1S bed/);
+  it("explains a G-code conflict between overlapping parts", () => {
+    const r = failureReason(" G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced");
+    expect(r.short).toBe("G-code conflict");
+    expect(r.reason).toMatch(/separate objects that overlap/);
+  });
+  it("explains an object conflict with the bed", () => {
+    expect(failureReason("Object conflicts were detected. Please verify the slicing").short).toBe("object conflict");
   });
   it("falls back to the slicer's own message", () => {
-    expect(failureReason([120, 80, 20], "Nothing to be sliced")).toBe("Bambu Studio could not slice this file: Nothing to be sliced");
+    expect(failureReason("Nothing to be sliced")).toEqual({
+      short: "slicer error",
+      reason: "Bambu Studio could not slice this file: Nothing to be sliced",
+    });
   });
 });
 

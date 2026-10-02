@@ -13,7 +13,7 @@ function groups(models: ModelRecord[]) {
 
 function meta(m: ModelRecord) {
   if (m.slice.status === "failed") {
-    return <><span className="text-[var(--warn)] group-aria-[current=true]:text-inherit">Not sliced</span>{m.slice.reason.includes("full width") ? " · fills the bed" : ""}</>;
+    return <><span className="text-[var(--warn)] group-aria-[current=true]:text-inherit">Not sliced</span>{` · ${m.slice.short}`}</>;
   }
   const cost = sliceCost(m.slice);
   return `${formatDuration(m.slice.seconds)} · ${formatMm(totalGrams(m.slice))} g${cost === null ? "" : ` · ${formatCad(cost)}`}`;

@@ -14,7 +14,15 @@ export type SliceSettings = {
   printer: string; process: string; layer: number; infill: string; walls: number; supports: boolean; nozzle: number;
 };
 export type Sliced = { status: "sliced"; seconds: number; filaments: Filament[]; plate: PlateObject[]; settings: SliceSettings };
-export type Failed = { status: "failed"; reason: string; slicerMessage: string };
+export type Failed = {
+  status: "failed";
+  /** A few words for the list, e.g. "G-code conflict". */
+  short: string;
+  reason: string;
+  slicerMessage: string;
+  /** Where a bare mesh was placed on the bed; null for project files, which keep their own layout. */
+  footprint: Box | null;
+};
 
 export type ModelRecord = {
   id: string;

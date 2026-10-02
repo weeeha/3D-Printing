@@ -1,5 +1,5 @@
 {
-  "slicedAt": "2026-10-01",
+  "slicedAt": "2026-10-02",
   "slicer": "Bambu Studio 02.07.01.62",
   "models": [
     {
@@ -17,10 +17,18 @@
         4
       ],
       "settingsSource": "defaults",
+      "thumbnail": true,
       "slice": {
         "status": "failed",
-        "reason": "256.0 mm wide, the full width of the P1S bed. Bambu Studio only slices parts that sit fully inside the plate, so it refuses this file as it is.",
-        "slicerMessage": "no result was written"
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
       }
     },
     {
@@ -38,10 +46,18 @@
         4
       ],
       "settingsSource": "defaults",
+      "thumbnail": true,
       "slice": {
         "status": "failed",
-        "reason": "256.0 mm wide, the full width of the P1S bed. Bambu Studio only slices parts that sit fully inside the plate, so it refuses this file as it is.",
-        "slicerMessage": "no result was written"
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
       }
     },
     {
@@ -59,10 +75,18 @@
         4
       ],
       "settingsSource": "defaults",
+      "thumbnail": true,
       "slice": {
         "status": "failed",
-        "reason": "256.0 mm wide, the full width of the P1S bed. Bambu Studio only slices parts that sit fully inside the plate, so it refuses this file as it is.",
-        "slicerMessage": "no result was written"
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
       }
     },
     {
@@ -80,10 +104,18 @@
         4
       ],
       "settingsSource": "defaults",
+      "thumbnail": true,
       "slice": {
         "status": "failed",
-        "reason": "256.0 mm wide, the full width of the P1S bed. Bambu Studio only slices parts that sit fully inside the plate, so it refuses this file as it is.",
-        "slicerMessage": "no result was written"
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
       }
     },
     {
@@ -101,10 +133,18 @@
         4
       ],
       "settingsSource": "defaults",
+      "thumbnail": true,
       "slice": {
         "status": "failed",
-        "reason": "256.0 mm wide, the full width of the P1S bed. Bambu Studio only slices parts that sit fully inside the plate, so it refuses this file as it is.",
-        "slicerMessage": "no result was written"
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
       }
     },
     {
@@ -122,10 +162,18 @@
         4
       ],
       "settingsSource": "defaults",
+      "thumbnail": true,
       "slice": {
         "status": "failed",
-        "reason": "256.0 mm wide, the full width of the P1S bed. Bambu Studio only slices parts that sit fully inside the plate, so it refuses this file as it is.",
-        "slicerMessage": "no result was written"
+        "short": "G-code conflict",
+        "reason": "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+        "slicerMessage": "G-code conflicts detected after slicing. Please make sure the 3mf file can be successfully sliced in the latest Bambu Studio. If the file slices normally in Bambu Studio, try moving the wipe tower further from other models, as we use more conservative parameters for it during upload.",
+        "footprint": [
+          0,
+          33,
+          256,
+          233
+        ]
       }
     },
     {
@@ -143,9 +191,10 @@
         23
       ],
       "settingsSource": "defaults",
+      "thumbnail": true,
       "slice": {
         "status": "sliced",
-        "seconds": 2836,
+        "seconds": 2817,
         "filaments": [
           {
             "slot": 1,
@@ -160,9 +209,9 @@
             "name": "CadQuery Component",
             "box": [
               78.5,
-              68.7,
+              90.8,
               177.5,
-              143.1
+              165.2
             ],
             "tower": false
           }
@@ -193,16 +242,17 @@
         37.5
       ],
       "settingsSource": "defaults",
+      "thumbnail": true,
       "slice": {
         "status": "sliced",
-        "seconds": 3521,
+        "seconds": 3474,
         "filaments": [
           {
             "slot": 1,
             "type": "PLA",
             "line": "PLA Basic",
             "hex": null,
-            "grams": 33
+            "grams": 33.1
           }
         ],
         "plate": [
@@ -243,6 +293,7 @@
         41.9
       ],
       "settingsSource": "defaults",
+      "thumbnail": true,
       "slice": {
         "status": "sliced",
         "seconds": 2945,
@@ -293,6 +344,7 @@
         28
       ],
       "settingsSource": "file",
+      "thumbnail": true,
       "slice": {
         "status": "sliced",
         "seconds": 13211,
@@ -355,11 +407,12 @@
       "triangles": 192556,
       "volumeCm3": 194.37,
       "size": [
-        28,
-        28,
+        116,
+        116,
         28
       ],
       "settingsSource": "file",
+      "thumbnail": true,
       "slice": {
         "status": "sliced",
         "seconds": 23410,
@@ -502,14 +555,15 @@
       "triangles": 31376,
       "volumeCm3": 29.5,
       "size": [
-        64,
-        44,
+        112.9,
+        46,
         28
       ],
       "settingsSource": "file",
+      "thumbnail": true,
       "slice": {
         "status": "sliced",
-        "seconds": 11063,
+        "seconds": 11064,
         "filaments": [
           {
             "slot": 1,

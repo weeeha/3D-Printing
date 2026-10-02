@@ -17,26 +17,61 @@ export function flattenProfile(kind, name, readProfile) {
   return { ...flattenProfile(kind, inherits, readProfile), ...rest };
 }
 
-/** `--info` prints one block per object; take the union box and summed counts. */
+/**
+ * `--info` prints one block per object. Only its counts are trustworthy: it centres every
+ * object on itself, so its min/max (and any union of them) say nothing about placement.
+ */
 export function parseInfo(text) {
-  const all = (key) =>
-    [...text.matchAll(new RegExp(`^${key} = +(-?[\\d.]+)`, "gm"))].map((m) => Number(m[1]));
-  const min = ["min_x", "min_y", "min_z"].map((k) => Math.min(...all(k)));
-  const max = ["max_x", "max_y", "max_z"].map((k) => Math.max(...all(k)));
-  const sum = (key) => all(key).reduce((a, b) => a + b, 0);
+  const sum = (key) =>
+    [...text.matchAll(new RegExp(`^${key} = +(-?[\\d.]+)`, "gm"))].reduce((t, m) => t + Number(m[1]), 0);
   return {
-    min,
-    max,
-    size: max.map((v, i) => round1(v - min[i])),
-    objects: all("size_x").length,
+    objects: [...text.matchAll(/^size_x = /gm)].length,
     triangles: sum("number_of_facets"),
     volumeCm3: Math.round(sum("volume") / 10) / 100,
   };
 }
 
-/** Offset that centres the union on the bed and puts its lowest point on Z=0. */
+/** Where the file really puts its parts: every vertex through its part's column-major matrix. */
+export function boundsOf(parts) {
+  const min = [Infinity, Infinity, Infinity];
+  const max = [-Infinity, -Infinity, -Infinity];
+  for (const { positions: p, matrix: m } of parts) {
+    for (let i = 0; i < p.length; i += 3) {
+      const x = p[i], y = p[i + 1], z = p[i + 2];
+      const v = [
+        m[0] * x + m[4] * y + m[8] * z + m[12],
+        m[1] * x + m[5] * y + m[9] * z + m[13],
+        m[2] * x + m[6] * y + m[10] * z + m[14],
+      ];
+      for (let k = 0; k < 3; k++) {
+        if (v[k] < min[k]) min[k] = v[k];
+        if (v[k] > max[k]) max[k] = v[k];
+      }
+    }
+  }
+  return { min, max, size: max.map((v, i) => round1(v - min[i])) };
+}
+
+/** The P1S never prints in its front-left 18 x 28 mm corner (bed_exclude_area). */
+export const NO_GO = [0, 0, 18, 28];
+/** Clearance kept from that corner; touching its edge is enough for Bambu Studio to refuse. */
+const NO_GO_MARGIN = 5;
+
+/**
+ * Offset that centres the parts on the bed, puts their lowest point on Z=0, and steps them
+ * back (or right, if there is no room behind) when the footprint reaches into the no-go corner.
+ */
 export function bedOffset({ min, max }) {
-  return [BED / 2 - (min[0] + max[0]) / 2, BED / 2 - (min[1] + max[1]) / 2, -min[2]];
+  const off = [BED / 2 - (min[0] + max[0]) / 2, BED / 2 - (min[1] + max[1]) / 2, 0 - min[2]];
+  const x0 = min[0] + off[0], y0 = min[1] + off[1], x1 = max[0] + off[0], y1 = max[1] + off[1];
+  const [, , cornerX, cornerY] = NO_GO;
+  if (x0 < cornerX + NO_GO_MARGIN && y0 < cornerY + NO_GO_MARGIN) {
+    const back = cornerY + NO_GO_MARGIN - y0;
+    const right = cornerX + NO_GO_MARGIN - x0;
+    if (y1 + back <= BED) off[1] += back;
+    else if (x1 + right <= BED) off[0] += right;
+  }
+  return off;
 }
 
 /**
@@ -96,13 +131,21 @@ export function productLine(preset) {
   return preset?.match(/^Bambu ((?:PLA|PETG|ABS|ASA|TPU|PC|PA)\b[^@]*?)\s*@/)?.[1] ?? "PLA Basic";
 }
 
-/** A sentence a person can act on, for a file the slicer refused. */
-export function failureReason(size, slicerMessage) {
-  const widest = Math.max(size[0], size[1]);
-  if (widest >= BED - 0.1) {
-    return `${widest.toFixed(1)} mm wide, the full width of the P1S bed. Bambu Studio only slices parts that sit fully inside the plate, so it refuses this file as it is.`;
+/** A short label and a sentence a person can act on, from the slicer's own error. */
+export function failureReason(slicerMessage) {
+  if (/G-code conflicts/i.test(slicerMessage)) {
+    return {
+      short: "G-code conflict",
+      reason: "Bambu Studio found print paths from different parts colliding. The file's parts are separate objects that overlap, so it refuses to slice it as it is. Open it in Bambu Studio to see where they collide.",
+    };
   }
-  return `Bambu Studio could not slice this file: ${slicerMessage}`;
+  if (/Object conflicts/i.test(slicerMessage)) {
+    return {
+      short: "object conflict",
+      reason: "Bambu Studio reports an object conflict: a part reaches into the bed's no-go corner or past its edge.",
+    };
+  }
+  return { short: "slicer error", reason: `Bambu Studio could not slice this file: ${slicerMessage.trim()}` };
 }
 
 export function slug(name) {
