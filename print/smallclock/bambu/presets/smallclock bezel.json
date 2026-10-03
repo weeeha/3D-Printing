@@ -1,0 +1,11 @@
+{
+    "type": "process",
+    "name": "smallclock bezel",
+    "inherits": "0.20mm Standard @BBL X1C",
+    "from": "User",
+    "instantiation": "true",
+    "print_settings_id": "smallclock bezel",
+    "wall_loops": "3",
+    "enable_support": "0",
+    "brim_type": "no_brim"
+}
