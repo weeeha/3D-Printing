@@ -1,0 +1,16 @@
+{
+    "type": "process",
+    "name": "smallclock pebble body",
+    "inherits": "0.20mm Standard @BBL X1C",
+    "from": "User",
+    "instantiation": "true",
+    "print_settings_id": "smallclock pebble body",
+    "wall_loops": "3",
+    "sparse_infill_density": "15%",
+    "sparse_infill_pattern": "gyroid",
+    "enable_support": "1",
+    "support_type": "tree(auto)",
+    "support_on_build_plate_only": "1",
+    "brim_type": "outer_only",
+    "brim_width": "5"
+}

@@ -23,6 +23,23 @@ Run any of them with the cad-skill venv; each writes STL + 3MF per part in its p
 
 Print-ready copies are in `print/smallclock/`, each final body with a `_fit_test` slice next to it.
 
+`print/smallclock/bambu/` has the same parts as Bambu Studio projects for the P1S (0.4 mm nozzle),
+with printer, filament and process already set, so they open ready to slice:
+`<part>.3mf` for each part, `<part>.gcode.3mf` for the two fit tests (already sliced, open and send),
+and `presets/*.json`, the three processes as user presets (Bambu Studio > File > Import > Import
+Configs). Fit tests are set up in PLA Basic, finals in PETG HF. `bambu_projects.py` rebuilds all of it
+from the STLs and the installed Bambu Studio's own presets:
+
+    python3 bambu_projects.py
+
+| Process preset | On top of 0.20mm Standard @BBL X1C | Used by |
+|---|---|---|
+| smallclock flush dome | 3 walls, 15% gyroid, tree supports on the plate only, inner brim 4 mm | flush dome body + fit test |
+| smallclock pebble body | 3 walls, 15% gyroid, tree supports on the plate only, outer brim 5 mm | pebble body + fit test |
+| smallclock bezel | 3 walls, no supports, no brim | pebble bezel |
+
+Sliced fit tests: flush dome 29 min, 18 g PLA; pebble 31 min, 13 g PLA (supports and brim included).
+
 `fitcheck.py [puck|pebble|block|dome_flush]` puts the measured hardware stack inside the parts,
 prints every clash (stack vs parts and part vs part), checks that it stands, and renders
 `fitcheck[_<variant>]_cutaway_preview.png` and `fitcheck[_<variant>]_assembly_preview.png`.
