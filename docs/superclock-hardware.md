@@ -22,6 +22,14 @@ published for this exact panel. Per the vendor wiki, **the Pi bolts directly ont
 of the display board** via a 4-pin header, so the assembly is a sandwich rather than two
 separately mounted parts.
 
+As of 2026-10-01 smallclock also carries a **SunFounder PiPower v2** UPS (90 x 56 mm, Pi hole
+pattern) on 24.5 mm brass spacers behind the Pi, component sides facing each other, with its
+**2S 7.4 V 2000 mAh pack** taped to the PiPower's back. The photos show no USB cable from the
+PiPower's USB-A out to the Pi; red/black dupont leads run from its J5/J6 5V pins instead, so it
+looks GPIO-powered (unconfirmed). A **USB mic** (SuziePi,
+23 x 20 x 5 mm) sits in the outer port of the USB3 stack. The stack ends 64.8 mm behind the glass;
+the enclosure's `fitcheck.py` models all of it.
+
 **squareclock is not the official Raspberry Pi 7" Touch Display**, despite presenting with
 that driver signature (`7inch-touchscreen-p` i2c node, `edt-ft5506` touch). Compatible
 clones are built as drop-in replacements, so **software identity does not establish
