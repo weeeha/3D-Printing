@@ -2,6 +2,8 @@
 
 Models, sources and print-ready files for the Bambu Lab P1S.
 
+![smallclock flush dome body, fit-checked with the display stack, front, back and side](parametric/superclock/smallclock/fitcheck_dome_flush_balanced_assembly_preview.png)
+
 Three tracks:
 
 | Track | What | Toolchain |
@@ -10,19 +12,39 @@ Three tracks:
 | **Sculpture** | Art objects, judged by eye. | Blender (mesh) |
 | **Signs** | Fake city construction / street signage. | FreeCAD scripted + SVG artwork |
 
+## Screenshots
+
+![smallclock pebble body, fit-checked with the display stack, front, back and side](parametric/superclock/smallclock/fitcheck_pebble_assembly_preview.png)
+
+The smallclock pebble body, rendered by `parametric/superclock/smallclock/fitcheck.py`. The two
+final smallclock enclosures (pebble and flush dome) are designed and fit-checked, not yet printed.
+
 ## Layout
 
 ```
-printer/      P1S profile, filament inventory, calibration results
+printer/      P1S profile, Bambu and Amazon order ledgers (filament inventory)
 parametric/   code-defined models
   signs/      FreeCAD pipeline (build_signs.py -> FCStd -> 3mf)
-  superclock/ clock enclosures
+  superclock/ clock enclosures (fastclock, smallclock)
   toolkit/    OpenSCAD story cubes, dice
 sculpture/    Blender / Substance sources, one folder per project
 print/        final .3mf (or STL when that is all that exists), per project
 scans/        photogrammetry / LiDAR captures (Scaniverse, face scans, point clouds)
-catalog/      static gallery site
-docs/         notes, hardware measurements
+catalog/      Next.js site: filament shelf (/) and print-file viewer (/models)
+docs/         notes, hardware measurements, design specs and plans
+```
+
+## Catalog site
+
+`catalog/` reads the CSV ledgers in `printer/` (filament shelf) and the `.3mf` files in `print/`
+(models viewer with print time, filament and cost per file).
+
+```
+cd catalog
+npm install
+npm run dev      # builds the spool data, then next dev
+npm test         # vitest
+npm run slice    # re-slice print/**/*.3mf into src/data/models.json (needs /Applications/BambuStudio.app)
 ```
 
 ## Rules of the repo
