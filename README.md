@@ -1,5 +1,13 @@
 # 3D Printing
 
+**Problem.** Models, sources and print files for one printer sat in separate folders and on a second computer, mixed with third-party downloads.
+
+**Idea.** One repo with three tracks (products that must fit real hardware, sculpture judged by eye, and signs), where parametric sources generate the meshes and the print-ready file is the deliverable.
+
+**Built.** Parametric FreeCAD and OpenSCAD sources (SuperClock enclosures, signs, story cubes), Blender sculpture sources, print-ready `.3mf` files in Git LFS, and a Next.js catalog with a filament shelf and a print-file viewer showing print time, filament and cost. The two final smallclock enclosures are designed and fit-checked but not yet printed. 24 commits on 8 days, Aug 17 to Oct 20, 2026.
+
+**Decision.** The `.3mf` file is the deliverable because it carries AMS filament-slot assignments and per-object print settings, which STL drops. Generated meshes are regenerated from the parametric sources and left out of git.
+
 Models, sources and print-ready files for the Bambu Lab P1S.
 
 ![smallclock flush dome body, fit-checked with the display stack, front, back and side](parametric/superclock/smallclock/fitcheck_dome_flush_balanced_assembly_preview.png)
