@@ -1,0 +1,5 @@
+{
+  "_note": "Part positions set by hand in Blender on 2026-11-11 and read from the open scene. product_render.py applies these over its own placement. Each value is the object's 4x4 world matrix, row by row. The speaker is scaled to 56.5% of the 100 mm CAD model.",
+  "Speaker": [0.000565, 0, 0, 0.001591, 0, 0.000516, -0.00023, 0.043303, 0, 0.00023, 0.000516, 0.072418, 0, 0, 0, 1],
+  "Battery board (UPS HAT)": [0, 0.001, 0, 0.002224, 0.000653, 0, 0.000758, 0.038269, 0.000758, 0, -0.000653, 0.024872, 0, 0, 0, 1]
+}
